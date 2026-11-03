@@ -901,7 +901,9 @@ def _validar_acceso():
     # Estilos solo para la pantalla de acceso.
     # También ocultamos el texto de Streamlit “Press Enter to apply”, que hacía
     # que el campo se viera amontonado junto al ícono de mostrar contraseña.
-    st.markdown("""
+    # Usamos st.html (no st.markdown) para inyectar el CSS de forma estable
+    # entre versiones de Streamlit.
+    st.html("""
         <style>
         div[data-testid="InputInstructions"] { display: none !important; }
 
@@ -980,9 +982,13 @@ def _validar_acceso():
             color: #ffffff !important;
         }
         </style>
-    """, unsafe_allow_html=True)
+    """)
 
-    st.markdown("""
+    # Tarjeta de encabezado del login: UN solo bloque con TODAS las etiquetas
+    # cerradas. (Antes los <div> se abrían aquí y se cerraban en otro
+    # st.markdown aparte; las versiones nuevas de Streamlit ya no permiten eso
+    # y por eso se veía el código en crudo y las cajas vacías.)
+    st.html("""
         <div class="login-wrap">
             <div class="login-card">
                 <div class="login-icon">🔐</div>
@@ -990,11 +996,13 @@ def _validar_acceso():
                 <p class="login-subtitle">
                     Ingresa la contraseña para usar el extractor de reportes Betterware.
                 </p>
-    """, unsafe_allow_html=True)
+            </div>
+        </div>
+    """)
 
-    # Pantalla de acceso sin st.form para evitar el aviso de Streamlit:
-    # “Missing Submit Button”. El botón valida la contraseña.
-    st.markdown('<div class="login-label">Contraseña de acceso</div>', unsafe_allow_html=True)
+    # Campos de acceso (ya quedan estilizados por el CSS de arriba). Sin st.form
+    # para evitar el aviso de Streamlit “Missing Submit Button”.
+    st.html('<div class="login-label">Contraseña de acceso</div>')
     clave_ingresada = st.text_input(
         "Contraseña de acceso",
         type="password",
@@ -1003,11 +1011,6 @@ def _validar_acceso():
         key="clave_login"
     )
     entrar = st.button("Entrar", use_container_width=True)
-
-    st.markdown("""
-            </div>
-        </div>
-    """, unsafe_allow_html=True)
 
     if entrar:
         if hmac.compare_digest(clave_ingresada.strip(), clave_correcta):
@@ -1024,7 +1027,7 @@ def _validar_acceso():
 # ============================================================================
 def main():
     st.set_page_config(page_title="Reporte de Asociados", page_icon="📊", layout="centered")
-    st.markdown("""
+    st.html("""
         <style>
         .stApp { background-color: #faf6fb !important; }
 
@@ -1085,7 +1088,7 @@ def main():
             color:#fff !important;
         }
         </style>
-    """, unsafe_allow_html=True)
+    """)
 
     _validar_acceso()
 
