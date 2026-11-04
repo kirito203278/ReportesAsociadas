@@ -908,14 +908,20 @@ def _validar_acceso():
         div[data-testid="InputInstructions"]{ display:none !important; }
         [data-testid="stSidebar"]{ display:none !important; }
         header[data-testid="stHeader"]{ background:transparent !important; }
-        .stApp{ background: radial-gradient(1100px 520px at 50% -5%, #f3e8fb 0%, #faf6fb 55%) !important; }
+        .stApp{ background:
+            radial-gradient(620px 440px at 12% 6%, rgba(242,92,0,.22), transparent 60%),
+            radial-gradient(720px 520px at 90% 16%, rgba(112,32,128,.26), transparent 60%),
+            radial-gradient(680px 520px at 50% 104%, rgba(242,229,0,.18), transparent 60%),
+            linear-gradient(160deg,#f6eefc 0%, #f2e9f8 100%) !important;
+            background-attachment:fixed !important; }
         .block-container{ max-width:480px !important; padding-top:11vh !important; }
 
-        /* La tarjeta (container con borde) */
+        /* La tarjeta de vidrio (container con borde) */
         div[data-testid="stVerticalBlockBorderWrapper"]{
-            background:#fff !important; border:1px solid #ece3f2 !important;
-            border-radius:24px !important; box-shadow:0 24px 60px rgba(112,32,128,.14) !important;
+            background:rgba(255,255,255,.55) !important; border:1px solid rgba(255,255,255,.65) !important;
+            border-radius:24px !important; box-shadow:0 24px 60px rgba(112,32,128,.16) !important;
             padding:30px 30px 26px !important;
+            backdrop-filter:blur(20px) saturate(150%) !important; -webkit-backdrop-filter:blur(20px) saturate(150%) !important;
         }
         .login-top{ text-align:center; }
         .login-icon{
@@ -930,22 +936,24 @@ def _validar_acceso():
             background:linear-gradient(90deg,#702080 0 33%,#F2E500 33% 66%,#F25C00 66% 100%); }
 
         .stTextInput input{
-            height:52px !important;border:1.5px solid #e4d7ee !important;border-radius:13px !important;
-            font-size:16px !important;background:#fff !important;color:#2b2330 !important;
+            height:52px !important;border:1.5px solid rgba(112,32,128,.18) !important;border-radius:13px !important;
+            font-size:16px !important;background:rgba(255,255,255,.7) !important;color:#2b2330 !important;
         }
         .stTextInput input:focus{ border-color:#702080 !important;
             box-shadow:0 0 0 3px rgba(112,32,128,.13) !important; }
-        .stButton>button{
+        /* Botón Entrar (cubre botón normal y de formulario) */
+        .stButton>button, [data-testid="stFormSubmitButton"] button{
             background:linear-gradient(135deg,#702080 0%,#F25C00 120%) !important;color:#fff !important;
             font-weight:800 !important;border:none !important;border-radius:13px !important;height:50px !important;
-            box-shadow:0 12px 24px rgba(112,32,128,.24) !important;
+            box-shadow:0 12px 24px rgba(112,32,128,.26) !important;
         }
-        .stButton>button *{ color:#fff !important; }
-        .stButton>button:hover{ filter:brightness(1.07); }
+        .stButton>button *, [data-testid="stFormSubmitButton"] button *{ color:#fff !important; }
+        .stButton>button:hover, [data-testid="stFormSubmitButton"] button:hover{ filter:brightness(1.07); }
         </style>
     """)
 
     # Todo el login dentro de UNA sola tarjeta centrada.
+    # Usamos st.form para que al presionar Enter en la contraseña intente entrar.
     with st.container(border=True):
         st.html("""
             <div class="login-top">
@@ -955,14 +963,15 @@ def _validar_acceso():
                 <div class="login-barra"></div>
             </div>
         """)
-        clave_ingresada = st.text_input(
-            "Contraseña de acceso",
-            type="password",
-            placeholder="Escribe la contraseña",
-            label_visibility="collapsed",
-            key="clave_login",
-        )
-        entrar = st.button("Entrar", type="primary", use_container_width=True)
+        with st.form("login_form", border=False, clear_on_submit=False):
+            clave_ingresada = st.text_input(
+                "Contraseña de acceso",
+                type="password",
+                placeholder="Escribe la contraseña",
+                label_visibility="collapsed",
+                key="clave_login",
+            )
+            entrar = st.form_submit_button("Entrar", type="primary", use_container_width=True)
 
     if entrar:
         if hmac.compare_digest(clave_ingresada.strip(), clave_correcta):
@@ -985,7 +994,12 @@ def main():
           --morado:#702080; --morado-osc:#4A1560; --naranja:#F25C00;
           --amarillo:#F2E500; --tinta:#2b2330; --borde:#ece3f2;
         }
-        .stApp{ background:#f7f2fb !important; }
+        .stApp{ background:
+            radial-gradient(620px 440px at 10% 8%, rgba(242,92,0,.20), transparent 60%),
+            radial-gradient(720px 520px at 92% 14%, rgba(112,32,128,.24), transparent 60%),
+            radial-gradient(680px 560px at 50% 104%, rgba(242,229,0,.16), transparent 60%),
+            linear-gradient(160deg,#f6eefc 0%, #f2e9f8 100%) !important;
+            background-attachment:fixed !important; }
         header[data-testid="stHeader"]{ background:transparent !important; }
         .block-container{ max-width:760px !important; padding-top:2.2rem !important; padding-bottom:3rem !important; }
         h1,h2,h3,h4,h5,h6{ color:var(--morado-osc) !important; letter-spacing:-.01em; }
@@ -1006,15 +1020,16 @@ def main():
         .sec{ font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#9a86a8;margin:24px 0 8px; }
 
         /* ===== Inputs ===== */
-        .stTextInput input{ background:#fff !important;color:var(--tinta) !important;
-          border:1.5px solid var(--borde) !important;border-radius:12px !important; }
+        .stTextInput input{ background:rgba(255,255,255,.7) !important;color:var(--tinta) !important;
+          border:1.5px solid rgba(112,32,128,.16) !important;border-radius:12px !important; }
         .stTextInput input:focus{ border-color:var(--morado) !important;
           box-shadow:0 0 0 3px rgba(112,32,128,.12) !important; }
 
-        /* ===== Zona de carga ===== */
+        /* ===== Zona de carga (vidrio) ===== */
         [data-testid="stFileUploader"]{
-          background:#fff !important; border:2px dashed #c9a9d6 !important; border-radius:16px;
-          box-shadow:0 10px 30px rgba(112,32,128,.06);
+          background:rgba(255,255,255,.5) !important; border:1.5px dashed rgba(112,32,128,.38) !important; border-radius:16px;
+          box-shadow:0 12px 34px rgba(112,32,128,.10);
+          backdrop-filter:blur(16px) saturate(150%) !important; -webkit-backdrop-filter:blur(16px) saturate(150%) !important;
         }
         [data-testid="stFileUploaderDropzone"], [data-testid="stFileUploaderDropzone"] section{
           background:transparent !important; color:var(--tinta) !important; padding:10px 6px !important;
@@ -1049,30 +1064,46 @@ def main():
           background:#d9c7e2 !important;color:#fdf6ff !important;box-shadow:none !important;cursor:not-allowed !important;filter:none !important;
         }
 
-        /* ===== Botones secundarios (Sheets, cerrar sesión) y descargas ===== */
+        /* ===== Botones secundarios (Sheets, cerrar sesión) y descargas (vidrio) ===== */
         [data-testid="stBaseButton-secondary"],
         [data-testid="stDownloadButton"] button{
-          background:#fff !important;color:var(--morado) !important;border:1.5px solid var(--morado) !important;
+          background:rgba(255,255,255,.6) !important;color:var(--morado) !important;border:1.5px solid rgba(112,32,128,.5) !important;
           border-radius:12px !important;font-weight:700 !important;
+          backdrop-filter:blur(10px) saturate(150%) !important; -webkit-backdrop-filter:blur(10px) saturate(150%) !important;
         }
         [data-testid="stBaseButton-secondary"] *, [data-testid="stDownloadButton"] button *{ color:var(--morado) !important; }
-        [data-testid="stDownloadButton"] button:hover, [data-testid="stBaseButton-secondary"]:hover{ background:#f6edfa !important; }
+        [data-testid="stDownloadButton"] button:hover, [data-testid="stBaseButton-secondary"]:hover{ background:rgba(246,237,250,.8) !important; }
 
-        /* ===== Tarjetas de métricas ===== */
+        /* ===== Tarjetas de métricas (vidrio) ===== */
         [data-testid="stMetric"]{
-          background:#fff !important;border:1px solid var(--borde) !important;border-radius:16px !important;
-          padding:14px 18px !important;box-shadow:0 8px 24px rgba(112,32,128,.06) !important;
+          background:rgba(255,255,255,.55) !important;border:1px solid rgba(255,255,255,.65) !important;border-radius:16px !important;
+          padding:14px 18px !important;box-shadow:0 10px 30px rgba(112,32,128,.10) !important;
+          backdrop-filter:blur(16px) saturate(150%) !important; -webkit-backdrop-filter:blur(16px) saturate(150%) !important;
         }
-        [data-testid="stMetricLabel"] *{ color:#7a6f84 !important;font-weight:700 !important; }
+        [data-testid="stMetricLabel"] *{ color:#6a5f74 !important;font-weight:700 !important; }
         [data-testid="stMetricValue"]{ color:var(--morado) !important;font-weight:800 !important; }
 
-        /* ===== Tarjetas (container border) ===== */
+        /* ===== Tarjetas de vidrio (container border) ===== */
         div[data-testid="stVerticalBlockBorderWrapper"]{
-          background:#fff !important;border:1px solid var(--borde) !important;border-radius:18px !important;
-          box-shadow:0 12px 34px rgba(112,32,128,.08) !important;padding:12px 20px 16px !important;
+          background:rgba(255,255,255,.55) !important;border:1px solid rgba(255,255,255,.65) !important;border-radius:20px !important;
+          box-shadow:0 18px 50px rgba(112,32,128,.12) !important;padding:12px 20px 16px !important;
+          backdrop-filter:blur(18px) saturate(150%) !important; -webkit-backdrop-filter:blur(18px) saturate(150%) !important;
         }
-        [data-testid="stDataFrame"]{ border-radius:12px;overflow:hidden;border:1px solid var(--borde); }
+        [data-testid="stDataFrame"]{ border-radius:12px;overflow:hidden;border:1px solid rgba(112,32,128,.12); }
         [data-testid="stAlert"]{ border-radius:12px; }
+
+        /* ===== Selector de IA tipo segmentos (pills) ===== */
+        [data-testid="stSegmentedControl"] [role="radiogroup"], [data-baseweb="button-group"]{
+          background:rgba(112,32,128,.08) !important;border-radius:12px !important;padding:4px !important;gap:4px !important;
+        }
+        [data-testid="stSegmentedControl"] button{
+          border:none !important;border-radius:9px !important;background:transparent !important;
+          color:#6d6175 !important;font-weight:700 !important;
+        }
+        [data-testid="stSegmentedControl"] button[aria-checked="true"], [data-testid="stSegmentedControl"] button[kind="primary"]{
+          background:#fff !important;color:var(--morado) !important;box-shadow:0 4px 12px rgba(112,32,128,.18) !important;
+        }
+        [data-testid="stSegmentedControl"] button *{ color:inherit !important; }
         </style>
     """)
 
@@ -1107,7 +1138,12 @@ def main():
         usar_ia = st.checkbox("🤖 Corregir nombres con IA (recomendado)", value=True)
         proveedor, api_key = "Claude", ""
         if usar_ia:
-            proveedor = st.radio("Proveedor de IA", ["Claude", "Gemini"], horizontal=True, index=0)
+            st.markdown("**Proveedor de IA**")
+            proveedor = st.segmented_control(
+                "Proveedor de IA", ["Claude", "Gemini"],
+                default="Claude", selection_mode="single", label_visibility="collapsed")
+            if not proveedor:
+                proveedor = "Claude"
             if proveedor == "Claude":
                 env_var = "ANTHROPIC_API_KEY"
             elif proveedor == "Grok":
