@@ -1067,12 +1067,27 @@ def main():
         /* ===== Botones secundarios (Sheets, cerrar sesión) y descargas (vidrio) ===== */
         [data-testid="stBaseButton-secondary"],
         [data-testid="stDownloadButton"] button{
-          background:rgba(255,255,255,.6) !important;color:var(--morado) !important;border:1.5px solid rgba(112,32,128,.5) !important;
+          background:rgba(255,255,255,.82) !important;color:var(--morado) !important;border:1.5px solid rgba(112,32,128,.55) !important;
           border-radius:12px !important;font-weight:700 !important;
+          box-shadow:0 6px 18px rgba(112,32,128,.10) !important;
           backdrop-filter:blur(10px) saturate(150%) !important; -webkit-backdrop-filter:blur(10px) saturate(150%) !important;
         }
         [data-testid="stBaseButton-secondary"] *, [data-testid="stDownloadButton"] button *{ color:var(--morado) !important; }
-        [data-testid="stDownloadButton"] button:hover, [data-testid="stBaseButton-secondary"]:hover{ background:rgba(246,237,250,.8) !important; }
+        [data-testid="stDownloadButton"] button:hover, [data-testid="stBaseButton-secondary"]:hover{ background:#fff !important; }
+
+        /* ===== Advertencias / avisos (vidrio, conservando su color) ===== */
+        [data-testid="stAlert"]{
+          border-radius:14px !important;
+          box-shadow:0 10px 28px rgba(112,32,128,.10) !important;
+          backdrop-filter:blur(8px) saturate(140%) !important; -webkit-backdrop-filter:blur(8px) saturate(140%) !important;
+          overflow:hidden !important;
+        }
+
+        /* ===== Quitar cualquier marco/caja interna: el fondo cubre todo ===== */
+        body, [data-testid="stAppViewContainer"], [data-testid="stMain"],
+        [data-testid="stMainBlockContainer"], section.main, .main{
+          background:transparent !important; border:none !important; box-shadow:none !important;
+        }
 
         /* ===== Tarjetas de métricas (vidrio) ===== */
         [data-testid="stMetric"]{
@@ -1090,7 +1105,6 @@ def main():
           backdrop-filter:blur(18px) saturate(150%) !important; -webkit-backdrop-filter:blur(18px) saturate(150%) !important;
         }
         [data-testid="stDataFrame"]{ border-radius:12px;overflow:hidden;border:1px solid rgba(112,32,128,.12); }
-        [data-testid="stAlert"]{ border-radius:12px; }
 
         /* ===== Selector de IA tipo segmentos (pills) ===== */
         [data-testid="stSegmentedControl"] [role="radiogroup"], [data-baseweb="button-group"]{
@@ -1304,7 +1318,7 @@ def main():
 
         # --- Abrir en Google Sheets (usa el resultado YA procesado; NO llama a la IA) ---
         st.html('<div class="sec">Google Sheets</div>')
-        if st.button("Crear y abrir en Google Sheets"):
+        if st.button("📗 Crear y abrir en Google Sheets", use_container_width=True):
             with st.spinner("Creando la hoja en tu Google Drive…"):
                 try:
                     url = subir_a_google_sheets(res["filas"], res["titulo"])
@@ -1328,11 +1342,11 @@ def main():
         if st.session_state.get("sheets_url"):
             st.markdown(f"🔗 [Abrir la hoja en Google Sheets]({st.session_state['sheets_url']})")
 
-    # ---- Cerrar sesión (abajo, discreto) ----
-    st.html("<div style='height:26px'></div>")
-    _, c_out = st.columns([3, 1])
-    with c_out:
-        if st.button("Cerrar sesión", use_container_width=True):
+    # ---- Cerrar sesión (abajo, centrado) ----
+    st.html("<div style='height:20px'></div>")
+    lc, cc, rc = st.columns([1, 1.4, 1])
+    with cc:
+        if st.button("↩ Cerrar sesión", use_container_width=True, key="logout_btn"):
             st.session_state.pop("acceso_autorizado", None)
             st.rerun()
 
