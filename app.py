@@ -891,11 +891,6 @@ def _validar_acceso():
         return True
 
     if st.session_state.get("acceso_autorizado"):
-        with st.sidebar:
-            st.success("🔒 Sesión iniciada")
-            if st.button("Cerrar sesión", use_container_width=True):
-                st.session_state.pop("acceso_autorizado", None)
-                st.rerun()
         return True
 
     # Estilos solo para la pantalla de acceso.
@@ -905,112 +900,64 @@ def _validar_acceso():
     # entre versiones de Streamlit.
     st.html("""
         <style>
-        div[data-testid="InputInstructions"] { display: none !important; }
+        div[data-testid="InputInstructions"]{ display:none !important; }
+        [data-testid="stSidebar"]{ display:none !important; }
+        header[data-testid="stHeader"]{ background:transparent !important; }
+        .stApp{ background: radial-gradient(1100px 520px at 50% -5%, #f3e8fb 0%, #faf6fb 55%) !important; }
+        .block-container{ max-width:460px !important; padding-top:12vh !important; }
 
-        .login-wrap {
-            max-width: 520px;
-            margin: 7vh auto 0 auto;
-            padding: 0 14px;
+        /* La tarjeta (container con borde) */
+        div[data-testid="stVerticalBlockBorderWrapper"]{
+            background:#fff !important; border:1px solid #ece3f2 !important;
+            border-radius:24px !important; box-shadow:0 24px 60px rgba(112,32,128,.14) !important;
+            padding:30px 30px 26px !important;
         }
-        .login-card {
-            background: #ffffff;
-            border: 1px solid #eadff0;
-            border-radius: 24px;
-            box-shadow: 0 18px 45px rgba(112, 32, 128, .13);
-            padding: 34px 34px 30px 34px;
-            text-align: center;
+        .login-top{ text-align:center; }
+        .login-icon{
+            width:70px;height:70px;margin:2px auto 16px;border-radius:22px;
+            display:flex;align-items:center;justify-content:center;font-size:33px;
+            background:linear-gradient(135deg,#702080 0%,#F25C00 100%);
+            box-shadow:0 14px 30px rgba(112,32,128,.30);
         }
-        .login-icon {
-            width: 64px;
-            height: 64px;
-            margin: 0 auto 14px auto;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, #702080, #F25C00);
-            color: white;
-            font-size: 30px;
-            box-shadow: 0 12px 25px rgba(112, 32, 128, .22);
-        }
-        .login-title {
-            margin: 0;
-            color: #702080;
-            font-size: 28px;
-            font-weight: 800;
-            line-height: 1.1;
-        }
-        .login-subtitle {
-            margin: 12px 0 22px 0;
-            color: #66586c;
-            font-size: 15px;
-            line-height: 1.45;
-        }
-        .login-label {
-            text-align: left;
-            font-weight: 700;
-            font-size: 14px;
-            color: #4a1560;
-            margin: 2px 0 8px 2px;
-        }
+        .login-title{ margin:0;color:#4A1560;font-size:25px;font-weight:800;letter-spacing:-.01em; }
+        .login-subtitle{ margin:9px 6px 2px;color:#7a6f84;font-size:14px;line-height:1.5; }
+        .login-barra{ height:5px;border-radius:4px;margin:16px 0 6px;
+            background:linear-gradient(90deg,#702080 0 33%,#F2E500 33% 66%,#F25C00 66% 100%); }
 
-        /* Campo de contraseña */
-        .stTextInput > div > div {
-            border-radius: 14px !important;
+        .stTextInput input{
+            height:50px !important;border:1.5px solid #e4d7ee !important;border-radius:13px !important;
+            font-size:16px !important;background:#fff !important;color:#2b2330 !important;text-align:center;
         }
-        .stTextInput input {
-            height: 48px !important;
-            border-radius: 14px !important;
-            font-size: 16px !important;
+        .stTextInput input:focus{ border-color:#702080 !important;
+            box-shadow:0 0 0 3px rgba(112,32,128,.13) !important; }
+        .stButton>button{
+            background:linear-gradient(135deg,#702080 0%,#F25C00 120%) !important;color:#fff !important;
+            font-weight:800 !important;border:none !important;border-radius:13px !important;height:50px !important;
+            box-shadow:0 12px 24px rgba(112,32,128,.24) !important;
         }
-
-        /* Botón de entrar */
-        div[data-testid="stButton"] button {
-            background: #702080 !important;
-            color: #ffffff !important;
-            font-weight: 800 !important;
-            border-radius: 14px !important;
-            border: none !important;
-            height: 48px !important;
-            margin-top: 8px !important;
-            box-shadow: 0 10px 22px rgba(112, 32, 128, .18);
-        }
-        div[data-testid="stButton"] button:hover {
-            background: #5a1a6b !important;
-        }
-        div[data-testid="stButton"] button * {
-            color: #ffffff !important;
-        }
+        .stButton>button *{ color:#fff !important; }
+        .stButton>button:hover{ filter:brightness(1.07); }
         </style>
     """)
 
-    # Tarjeta de encabezado del login: UN solo bloque con TODAS las etiquetas
-    # cerradas. (Antes los <div> se abrían aquí y se cerraban en otro
-    # st.markdown aparte; las versiones nuevas de Streamlit ya no permiten eso
-    # y por eso se veía el código en crudo y las cajas vacías.)
-    st.html("""
-        <div class="login-wrap">
-            <div class="login-card">
+    # Todo el login dentro de UNA sola tarjeta centrada.
+    with st.container(border=True):
+        st.html("""
+            <div class="login-top">
                 <div class="login-icon">🔐</div>
-                <h2 class="login-title">Acceso privado</h2>
-                <p class="login-subtitle">
-                    Ingresa la contraseña para usar el extractor de reportes Betterware.
-                </p>
+                <div class="login-title">Acceso privado</div>
+                <div class="login-subtitle">Ingresa la contraseña para usar el extractor de reportes Betterware.</div>
+                <div class="login-barra"></div>
             </div>
-        </div>
-    """)
-
-    # Campos de acceso (ya quedan estilizados por el CSS de arriba). Sin st.form
-    # para evitar el aviso de Streamlit “Missing Submit Button”.
-    st.html('<div class="login-label">Contraseña de acceso</div>')
-    clave_ingresada = st.text_input(
-        "Contraseña de acceso",
-        type="password",
-        placeholder="Escribe la contraseña",
-        label_visibility="collapsed",
-        key="clave_login"
-    )
-    entrar = st.button("Entrar", use_container_width=True)
+        """)
+        clave_ingresada = st.text_input(
+            "Contraseña de acceso",
+            type="password",
+            placeholder="Escribe la contraseña",
+            label_visibility="collapsed",
+            key="clave_login",
+        )
+        entrar = st.button("Entrar", type="primary", use_container_width=True)
 
     if entrar:
         if hmac.compare_digest(clave_ingresada.strip(), clave_correcta):
@@ -1026,142 +973,138 @@ def _validar_acceso():
 # INTERFAZ
 # ============================================================================
 def main():
-    st.set_page_config(page_title="Reporte de Asociados", page_icon="📊", layout="centered")
+    st.set_page_config(page_title="Reporte de Asociados", page_icon="📊", layout="wide")
     st.html("""
         <style>
-        /* ===== Paleta de marca INNquietus ===== */
         :root{
           --morado:#702080; --morado-osc:#4A1560; --naranja:#F25C00;
-          --amarillo:#F2E500; --tinta:#2b2330; --suave:#faf6fb;
-          --borde:#ece3f2;
+          --amarillo:#F2E500; --tinta:#2b2330; --borde:#ece3f2;
         }
 
-        .stApp { background: radial-gradient(1200px 600px at 50% -10%, #f6eefb 0%, #faf6fb 55%) !important; }
+        .stApp{ background:#f7f2fb !important; }
+        header[data-testid="stHeader"]{ background:transparent !important; }
 
-        /* Ancho de contenido un poco mayor y con aire */
-        .block-container { max-width: 820px !important; padding-top: 2.2rem !important; }
+        /* Contenido central enfocado */
+        .block-container{ max-width:760px !important; padding-top:2.4rem !important; padding-bottom:3rem !important; }
+        h1,h2,h3,h4,h5,h6{ color:var(--morado-osc) !important; letter-spacing:-.01em; }
+        .stCaption, .stMarkdown p{ color:var(--tinta) !important; }
+        div[data-testid="InputInstructions"]{ display:none !important; }
 
-        h1,h2,h3,h4,h5,h6 { color: var(--morado-osc) !important; letter-spacing:-.01em; }
-        .stCaption, .stMarkdown p { color: var(--tinta) !important; }
-        div[data-testid="InputInstructions"] { display:none !important; }
-
-        /* ===== Tarjetas (st.container(border=True)) ===== */
-        div[data-testid="stVerticalBlockBorderWrapper"]{
-          background:#ffffff !important;
-          border:1px solid var(--borde) !important;
-          border-radius:18px !important;
-          box-shadow:0 10px 30px rgba(112,32,128,.07) !important;
-          padding:6px 20px 14px !important;
+        /* ===== Barra lateral ===== */
+        [data-testid="stSidebar"]{
+          background:linear-gradient(180deg,#2a0f33 0%, #4A1560 100%) !important;
+          border-right:none !important;
         }
-
-        /* Encabezado de paso: número en degradado + título */
-        .paso{ display:flex; align-items:center; gap:10px; margin:6px 0 2px; }
-        .paso .n{
-          width:30px;height:30px;border-radius:50%;flex:0 0 30px;
-          display:flex;align-items:center;justify-content:center;
-          background:linear-gradient(135deg,var(--morado),var(--naranja));
-          color:#fff;font-weight:800;font-size:15px;
-          box-shadow:0 6px 14px rgba(112,32,128,.25);
+        [data-testid="stSidebar"] *{ color:#f3e9f7 !important; }
+        [data-testid="stSidebar"] .stCaption, [data-testid="stSidebar"] .stCaption *{ color:#c9b2d6 !important; }
+        .side-brand{ display:flex; align-items:center; gap:12px; padding:6px 2px 2px; }
+        .side-brand img{ height:46px;width:auto;border-radius:10px; }
+        .side-kicker{ font-size:12px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#F2E500 !important; }
+        .side-kicker b{ color:#fff !important; font-weight:800; }
+        .side-app{ font-size:20px;font-weight:800;color:#fff !important;margin-top:-2px; }
+        .side-h{ font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+                 color:#c9b2d6 !important;margin:18px 0 2px; }
+        [data-testid="stSidebar"] .stTextInput input{
+          background:rgba(255,255,255,.08) !important;border:1.5px solid rgba(255,255,255,.18) !important;
+          color:#fff !important;border-radius:11px !important;
         }
-        .paso .t{ font-size:18px;font-weight:800;color:var(--morado-osc); }
-        .paso .s{ font-size:13px;color:#7a6f84;margin:-2px 0 0 40px; }
+        [data-testid="stSidebar"] .stTextInput input::placeholder{ color:#c9b2d6 !important; }
 
-        /* ===== Inputs ===== */
-        .stTextInput input, .stTextArea textarea{
-          background:#fff !important; color:var(--tinta) !important;
-          border:1.5px solid var(--borde) !important; border-radius:12px !important;
-        }
-        .stTextInput input:focus{ border-color:var(--morado) !important;
-          box-shadow:0 0 0 3px rgba(112,32,128,.12) !important; }
+        /* ===== Hero ===== */
+        .hero-kicker{ font-size:13px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--naranja); }
+        .hero-kicker b{ color:var(--morado); }
+        .hero-title{ font-size:40px;font-weight:800;color:var(--morado-osc);margin:2px 0 0;line-height:1.05; }
+        .hero-bar{ height:6px;width:120px;border-radius:4px;margin:12px 0 2px;
+          background:linear-gradient(90deg,var(--morado) 0 33%,var(--amarillo) 33% 66%,var(--naranja) 66% 100%); }
 
-        /* ===== Uploader ===== */
+        /* ===== Zona de carga grande ===== */
         [data-testid="stFileUploader"]{
-          background:#fff !important; border:1.5px dashed #c9a9d6 !important; border-radius:14px;
+          background:#fff !important; border:2px dashed #c9a9d6 !important; border-radius:16px;
+          box-shadow:0 10px 30px rgba(112,32,128,.06);
         }
-        [data-testid="stFileUploaderDropzone"],
-        [data-testid="stFileUploaderDropzone"] section{
-          background:#faf4fc !important; color:var(--tinta) !important;
+        [data-testid="stFileUploaderDropzone"], [data-testid="stFileUploaderDropzone"] section{
+          background:transparent !important; color:var(--tinta) !important; padding:10px 6px !important;
         }
         [data-testid="stFileUploaderDropzone"] button{
-          background:var(--morado) !important; color:#fff !important; border:none !important;
-          border-radius:10px !important;
+          background:var(--morado) !important; color:#fff !important; border:none !important; border-radius:10px !important;
         }
         [data-testid="stFileUploaderDropzone"] button *{ color:#fff !important; }
 
-        /* ===== Botón primario "Generar" (degradado) ===== */
+        /* ===== Inputs ===== */
+        .stTextInput input{ background:#fff !important;color:var(--tinta) !important;
+          border:1.5px solid var(--borde) !important;border-radius:12px !important; }
+        .stTextInput input:focus{ border-color:var(--morado) !important;
+          box-shadow:0 0 0 3px rgba(112,32,128,.12) !important; }
+
+        /* ===== Botón primario "Generar" ===== */
         .stButton>button[kind="primary"], [data-testid="stBaseButton-primary"]{
-          background:linear-gradient(135deg,var(--morado) 0%, var(--naranja) 130%) !important;
-          color:#fff !important; font-weight:800 !important; font-size:16px !important;
-          border:none !important; border-radius:14px !important; padding:12px 22px !important;
-          box-shadow:0 12px 24px rgba(112,32,128,.22) !important;
-          transition:transform .05s ease, filter .15s ease;
+          background:linear-gradient(135deg,var(--morado) 0%, var(--naranja) 120%) !important;
+          color:#fff !important;font-weight:800 !important;font-size:17px !important;
+          border:none !important;border-radius:14px !important;padding:14px 22px !important;
+          box-shadow:0 14px 28px rgba(112,32,128,.26) !important; transition:filter .15s, transform .05s;
         }
-        .stButton>button[kind="primary"]:hover, [data-testid="stBaseButton-primary"]:hover{
-          filter:brightness(1.06); }
+        .stButton>button[kind="primary"]:hover, [data-testid="stBaseButton-primary"]:hover{ filter:brightness(1.07); }
         .stButton>button[kind="primary"]:active{ transform:translateY(1px); }
         .stButton>button[kind="primary"]:disabled, [data-testid="stBaseButton-primary"]:disabled{
-          background:#d9c7e2 !important; color:#fdf6ff !important; box-shadow:none !important;
-          cursor:not-allowed !important; filter:none !important;
+          background:#d9c7e2 !important;color:#fdf6ff !important;box-shadow:none !important;cursor:not-allowed !important;filter:none !important;
         }
-        .stButton>button *{ color:#fff !important; }
+        [data-testid="stSidebar"] .stButton>button{ background:rgba(255,255,255,.1) !important;border:1.5px solid rgba(255,255,255,.25) !important;color:#fff !important;border-radius:11px !important;font-weight:700 !important; }
+        [data-testid="stSidebar"] .stButton>button *{ color:#fff !important; }
 
-        /* ===== Botón secundario (Sheets) ===== */
-        .stButton>button[kind="secondary"], [data-testid="stBaseButton-secondary"]{
-          background:#fff !important; color:var(--morado) !important;
-          border:1.5px solid var(--morado) !important; border-radius:12px !important; font-weight:700 !important;
-        }
-        .stButton>button[kind="secondary"] *, [data-testid="stBaseButton-secondary"] *{ color:var(--morado) !important; }
-        .stButton>button[kind="secondary"]:hover{ background:#f6edfa !important; }
-
-        /* ===== Botones de descarga (Excel / PDF) ===== */
+        /* ===== Botón secundario (Sheets) y descargas ===== */
+        [data-testid="stBaseButton-secondary"],
         [data-testid="stDownloadButton"] button{
-          background:#fff !important; color:var(--morado) !important;
-          border:1.5px solid var(--morado) !important; border-radius:12px !important;
-          font-weight:700 !important; padding:10px 18px !important;
+          background:#fff !important;color:var(--morado) !important;border:1.5px solid var(--morado) !important;
+          border-radius:12px !important;font-weight:700 !important;
         }
-        [data-testid="stDownloadButton"] button *{ color:var(--morado) !important; }
-        [data-testid="stDownloadButton"] button:hover{ background:#f6edfa !important; }
+        [data-testid="stBaseButton-secondary"] *, [data-testid="stDownloadButton"] button *{ color:var(--morado) !important; }
+        [data-testid="stDownloadButton"] button:hover, [data-testid="stBaseButton-secondary"]:hover{ background:#f6edfa !important; }
 
-        /* ===== Tabla ===== */
-        [data-testid="stDataFrame"]{ border-radius:12px; overflow:hidden; border:1px solid var(--borde); }
+        /* ===== Tarjetas de métricas (st.metric) ===== */
+        [data-testid="stMetric"]{
+          background:#fff !important;border:1px solid var(--borde) !important;border-radius:16px !important;
+          padding:14px 18px !important;box-shadow:0 8px 24px rgba(112,32,128,.06) !important;
+        }
+        [data-testid="stMetricLabel"] *{ color:#7a6f84 !important;font-weight:700 !important; }
+        [data-testid="stMetricValue"]{ color:var(--morado) !important;font-weight:800 !important; }
 
-        /* ===== Avisos un poco más suaves ===== */
+        /* ===== Tarjeta de resultado ===== */
+        div[data-testid="stVerticalBlockBorderWrapper"]{
+          background:#fff !important;border:1px solid var(--borde) !important;border-radius:18px !important;
+          box-shadow:0 12px 34px rgba(112,32,128,.08) !important;padding:10px 20px 16px !important;
+        }
+        [data-testid="stDataFrame"]{ border-radius:12px;overflow:hidden;border:1px solid var(--borde); }
         [data-testid="stAlert"]{ border-radius:12px; }
+
+        .sec{ font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#9a86a8;margin:26px 0 8px; }
         </style>
     """)
 
     _validar_acceso()
 
-    # Encabezado de marca: logo + nombre INNquietus + título (logo embebido en base64
-    # para que quede alineado junto al texto; usa 'logo.png' junto a app.py si existe).
+    # Logo embebido (base64) para el encabezado de la barra lateral.
     import base64
     logo_path = _ruta_junto_app("logo.png")
-    logo_html = ""
+    logo_img = ""
     if os.path.exists(logo_path):
         with open(logo_path, "rb") as _f:
             _b64 = base64.b64encode(_f.read()).decode()
-        logo_html = f"<img src='data:image/png;base64,{_b64}' style='height:88px;width:auto;'>"
+        logo_img = f"<img src='data:image/png;base64,{_b64}'>"
 
-    st.markdown(f"""
-        <div style="display:flex;align-items:center;gap:18px;margin-bottom:4px;">
-          {logo_html}
-          <div style="line-height:1.05;">
-            <div style="font-size:14px;font-weight:800;letter-spacing:3px;
-                        text-transform:uppercase;color:#F25C00;">INN<span style="color:#702080;">quietus</span></div>
-            <h1 style="color:#702080;margin:2px 0 0;font-size:42px;">Reporte de Asociados</h1>
-          </div>
-        </div>
-        <div style="height:6px;border-radius:3px;margin:8px 0 10px;
-             background:linear-gradient(90deg,#702080 0 33%,#F2E500 33% 66%,#F25C00 66% 100%);"></div>
-    """, unsafe_allow_html=True)
-    st.caption("Herramienta privada para procesar reportes CTBT Betterware, generar Excel/PDF y crear Google Sheets.")
-
-    # ---------- Paso 1: Configuración ----------
-    with st.container(border=True):
-        st.html('<div class="paso"><span class="n">1</span><span class="t">Configuración</span></div>')
+    # ===================== BARRA LATERAL: marca + configuración =====================
+    with st.sidebar:
+        st.html(f"""
+            <div class="side-brand">
+              {logo_img}
+              <div>
+                <div class="side-kicker"><b>INN</b>quietus</div>
+                <div class="side-app">Reportes</div>
+              </div>
+            </div>
+        """)
+        st.html('<div class="side-h">Configuración</div>')
         titulo_reporte = st.text_input("Título del reporte", value="Reporte de Asociados")
-
-        usar_ia = st.checkbox("🤖 Corregir nombres con IA (recomendado)", value=True)
+        usar_ia = st.checkbox("🤖 Corregir nombres con IA", value=True)
         proveedor, api_key = "Claude", ""
         if usar_ia:
             proveedor = st.radio("Proveedor de IA", ["Claude", "Gemini"], horizontal=True, index=0)
@@ -1173,22 +1116,32 @@ def main():
                 env_var = "GEMINI_API_KEY"
             env_key = os.environ.get(env_var, "")
             if env_key:
-                # La key viene del .env: NO se muestra en pantalla por seguridad.
                 api_key = env_key
-                st.caption(f"🔒 API Key de {proveedor} cargada del archivo .env (oculta por seguridad).")
+                st.caption(f"🔒 API Key de {proveedor} cargada del .env (oculta por seguridad).")
             else:
-                # No hay .env: se pide, pero el campo es de tipo password (puntos).
                 api_key = st.text_input(
                     f"API Key de {proveedor}", value="", type="password",
                     help="Se usa solo en esta sesión. No se guarda en el código.")
 
-    # ---------- Paso 2: Subir PDF ----------
-    with st.container(border=True):
-        st.html('<div class="paso"><span class="n">2</span><span class="t">Sube tu PDF</span></div>')
-        archivo = st.file_uploader("Arrastra o selecciona el PDF", type=["pdf"],
-                                   label_visibility="collapsed")
+        st.html('<div class="side-h" style="margin-top:26px;">Sesión</div>')
+        if st.button("Cerrar sesión", use_container_width=True):
+            st.session_state.pop("acceso_autorizado", None)
+            st.rerun()
 
-    # ---------- Paso 3: Generar ----------
+    # ===================== ÁREA PRINCIPAL =====================
+    st.html("""
+        <div class="hero-kicker"><b>INN</b>quietus · Betterware</div>
+        <div class="hero-title">Reporte de Asociados</div>
+        <div class="hero-bar"></div>
+    """)
+    st.caption("Sube el PDF de actividad, genera el Excel/PDF y crea la hoja de Google. Procesa en un clic.")
+
+    # ---------- Subir PDF ----------
+    st.html('<div class="sec">Sube tu PDF</div>')
+    archivo = st.file_uploader("Arrastra o selecciona el PDF", type=["pdf"],
+                               label_visibility="collapsed")
+
+    # ---------- Generar ----------
     st.session_state.setdefault("procesando", False)
     procesando = st.session_state["procesando"]
     etiqueta_btn = "⏳ Generando…" if procesando else "✨ Generar"
@@ -1300,10 +1253,18 @@ def main():
                 f"({signo}${diferencia:,}). Se conserva la suma por asociada."
             )
 
+        # --- Resumen en tarjetas (KPIs) ---
+        _tot_pedidos = sum(r["pedidos"] for r in filas)
+        _tot_compras = sum(r["ingresos"] for r in filas)
+        st.html('<div class="sec">Resumen</div>')
+        m1, m2, m3 = st.columns(3)
+        m1.metric("Asociados", f"{len(filas)}")
+        m2.metric("Total de pedidos", f"{_tot_pedidos:,}")
+        m3.metric("Compras del catálogo", f"${_tot_compras:,}")
+
+        # --- Tabla + descargas ---
+        st.html('<div class="sec">Detalle y descargas</div>')
         with st.container(border=True):
-            st.html('<div class="paso"><span class="n">3</span><span class="t">Resultado</span></div>')
-            st.success(f"✅ Procesado: {len(filas)} asociados. "
-                       "El resultado se queda en pantalla; solo se renueva al generar otro PDF.")
             st.dataframe(
                 [{"Nombre del Asociado": r["nombre"], "Total de Pedidos": r["pedidos"],
                   "Total Compras Catálogo Actual": f"${r['ingresos']:,}"} for r in filas],
@@ -1319,7 +1280,7 @@ def main():
                     mime="application/pdf", use_container_width=True)
 
         # --- Abrir en Google Sheets (usa el resultado YA procesado; NO llama a la IA) ---
-        st.markdown("##### 📗 Abrir en Google Sheets")
+        st.html('<div class="sec">Google Sheets</div>')
         if st.button("Crear y abrir en Google Sheets"):
             with st.spinner("Creando la hoja en tu Google Drive…"):
                 try:
