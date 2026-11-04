@@ -524,14 +524,14 @@ def generar_excel(filas, titulo_reporte):
     MORADO, MORADO_OSC, NARANJA, BLANCO, LILA = "702080", "4A1560", "F25C00", "FFFFFF", "F3ECF7"
     thin = Side(style="thin", color="D8CCE2")
     borde = Border(left=thin, right=thin, top=thin, bottom=thin)
-    headers = ["Nombre del Asociado", "Pedidos", "Compras Catálogo Actual"]
+    headers = ["#", "Nombre del Asociado", "Pedidos", "Compras Catálogo Actual"]
 
     def construir(ws, subtitulo, registros):
         """Llena una hoja con la tabla de marca (título, logo, encabezado, datos, total, barras)."""
         ws.sheet_view.showGridLines = False
 
         # Título
-        ws.merge_cells("A1:C1")
+        ws.merge_cells("A1:D1")
         c = ws["A1"]; c.value = titulo_reporte
         c.font = Font(name="Arial", size=16, bold=True, color=BLANCO)
         c.fill = PatternFill("solid", fgColor=MORADO)
@@ -547,7 +547,7 @@ def generar_excel(filas, titulo_reporte):
             pass
 
         # Subtítulo naranja (marca + descripción de la hoja)
-        ws.merge_cells("A2:C2")
+        ws.merge_cells("A2:D2")
         s = ws["A2"]; s.value = f"INNquietus · {subtitulo}"
         s.font = Font(name="Arial", size=11, bold=True, color=BLANCO)
         s.fill = PatternFill("solid", fgColor=NARANJA)
@@ -563,46 +563,49 @@ def generar_excel(filas, titulo_reporte):
             cell.border = borde
         ws.row_dimensions[3].height = 28
 
-        # Datos
+        # Datos (columna A = número de asociado)
         fila = 4
         for idx, r in enumerate(registros):
             relleno = LILA if idx % 2 else BLANCO
-            vals = [r["nombre"], r["pedidos"], r["ingresos"]]
+            vals = [idx + 1, r["nombre"], r["pedidos"], r["ingresos"]]
             for col, val in enumerate(vals, start=1):
                 cell = ws.cell(row=fila, column=col, value=val)
                 cell.font = Font(name="Arial", size=10)
                 cell.fill = PatternFill("solid", fgColor=relleno)
                 cell.border = borde
-                if col == 1:
-                    cell.alignment = Alignment(horizontal="left", vertical="center")
-                elif col == 2:
+                if col == 1:      # #
                     cell.alignment = Alignment(horizontal="center", vertical="center")
-                else:
+                elif col == 2:    # Nombre
+                    cell.alignment = Alignment(horizontal="left", vertical="center")
+                elif col == 3:    # Pedidos
+                    cell.alignment = Alignment(horizontal="center", vertical="center")
+                else:             # Compras
                     cell.alignment = Alignment(horizontal="right", vertical="center"); cell.number_format = '"$"#,##0'
             fila += 1
 
-        # Total
+        # Total (etiqueta en A-B, sumas en C=pedidos y D=compras)
+        ws.merge_cells(start_row=fila, start_column=1, end_row=fila, end_column=2)
         ws.cell(row=fila, column=1, value="TOTAL")
-        for col in (1, 2, 3):
+        for col in (1, 2, 3, 4):
             cell = ws.cell(row=fila, column=col)
             cell.font = Font(name="Arial", size=11, bold=True, color=BLANCO)
             cell.fill = PatternFill("solid", fgColor=MORADO)
             cell.border = borde
         ws.cell(row=fila, column=1).alignment = Alignment(horizontal="center", vertical="center")
         if registros:
-            ws.cell(row=fila, column=2, value=f"=SUM(B4:B{fila-1})").alignment = Alignment(horizontal="center", vertical="center")
-            e = ws.cell(row=fila, column=3, value=f"=SUM(C4:C{fila-1})")
+            ws.cell(row=fila, column=3, value=f"=SUM(C4:C{fila-1})").alignment = Alignment(horizontal="center", vertical="center")
+            e = ws.cell(row=fila, column=4, value=f"=SUM(D4:D{fila-1})")
         else:
-            ws.cell(row=fila, column=2, value=0).alignment = Alignment(horizontal="center", vertical="center")
-            e = ws.cell(row=fila, column=3, value=0)
+            ws.cell(row=fila, column=3, value=0).alignment = Alignment(horizontal="center", vertical="center")
+            e = ws.cell(row=fila, column=4, value=0)
         e.alignment = Alignment(horizontal="right", vertical="center"); e.number_format = '"$"#,##0'
 
-        # Barras de datos moradas en la columna de compras (más color)
+        # Barras de datos moradas en la columna de compras (D)
         if registros:
             regla = DataBarRule(start_type="min", end_type="max", color="B583C9", showValue=True)
-            ws.conditional_formatting.add(f"C4:C{fila-1}", regla)
+            ws.conditional_formatting.add(f"D4:D{fila-1}", regla)
 
-        for col, w in zip("ABC", (44, 14, 26)):
+        for col, w in zip("ABCD", (6, 44, 14, 26)):
             ws.column_dimensions[col].width = w
         ws.freeze_panes = "A4"
 
@@ -680,30 +683,32 @@ def generar_pdf(filas, titulo_reporte):
             alignment=TA_CENTER,
         )
         data = [[
+            Paragraph("#", header_style),
             Paragraph("Nombre del Asociado", header_style),
             Paragraph("Pedidos", header_style),
             Paragraph("Compras Catálogo Actual", header_style),
         ]]
         tot_p = tot_i = 0
-        for r in registros:
-            data.append([r["nombre"], str(r["pedidos"]), f"${r['ingresos']:,}"])
+        for i, r in enumerate(registros, start=1):
+            data.append([str(i), r["nombre"], str(r["pedidos"]), f"${r['ingresos']:,}"])
             tot_p += r["pedidos"]; tot_i += r["ingresos"]
-        data.append(["TOTAL", str(tot_p), f"${tot_i:,}"])
-        t = Table(data, colWidths=[9.4*cm, 2.6*cm, 5.0*cm], repeatRows=1)
+        data.append(["", "TOTAL", str(tot_p), f"${tot_i:,}"])
+        t = Table(data, colWidths=[1.0*cm, 8.4*cm, 2.6*cm, 5.0*cm], repeatRows=1)
         t.setStyle(TableStyle([
             ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#4A1560")),
             ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
             ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
             ("FONTSIZE", (0, 0), (-1, -1), 8),
-            ("ALIGN", (0, 0), (0, -1), "LEFT"),
-            ("ALIGN", (1, 0), (1, -1), "CENTER"),
-            ("ALIGN", (2, 0), (2, -1), "RIGHT"),
+            ("ALIGN", (0, 0), (0, -1), "CENTER"),
+            ("ALIGN", (1, 0), (1, -1), "LEFT"),
+            ("ALIGN", (2, 0), (2, -1), "CENTER"),
+            ("ALIGN", (3, 0), (3, -1), "RIGHT"),
             ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
             ("ROWBACKGROUNDS", (0, 1), (-1, -2), [colors.white, colors.HexColor("#F3ECF7")]),
             ("BACKGROUND", (0, -1), (-1, -1), colors.HexColor("#702080")),
             ("TEXTCOLOR", (0, -1), (-1, -1), colors.white),
             ("FONTNAME", (0, -1), (-1, -1), "Helvetica-Bold"),
-            ("ALIGN", (0, -1), (0, -1), "CENTER"),
+            ("ALIGN", (1, -1), (1, -1), "CENTER"),
             ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#D8CCE2")),
             ("TOPPADDING", (0, 0), (-1, -1), 4),
             ("BOTTOMPADDING", (0, 0), (-1, -1), 4),
@@ -1243,8 +1248,8 @@ def main():
         st.html('<div class="sec">Detalle y descargas</div>')
         with st.container(border=True):
             st.dataframe(
-                [{"Nombre del Asociado": r["nombre"], "Total de Pedidos": r["pedidos"],
-                  "Total Compras Catálogo Actual": f"${r['ingresos']:,}"} for r in filas],
+                [{"#": i, "Nombre del Asociado": r["nombre"], "Total de Pedidos": r["pedidos"],
+                  "Total Compras Catálogo Actual": f"${r['ingresos']:,}"} for i, r in enumerate(filas, 1)],
                 use_container_width=True, hide_index=True)
 
             col1, col2 = st.columns(2)
