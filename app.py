@@ -1024,6 +1024,18 @@ def main():
         }
         [data-testid="stFileUploaderDropzone"] button *{ color:#fff !important; }
 
+        /* Traducción de los textos internos del uploader (Streamlit los pone en inglés) */
+        [data-testid="stFileUploaderDropzoneInstructions"] span{ display:none !important; }
+        [data-testid="stFileUploaderDropzoneInstructions"] small{ display:none !important; }
+        [data-testid="stFileUploaderDropzoneInstructions"] > div::before{
+          content:"Arrastra o selecciona tu PDF"; display:block; font-weight:700; color:var(--tinta); font-size:15px;
+        }
+        [data-testid="stFileUploaderDropzoneInstructions"] > div::after{
+          content:"Límite 20 MB · PDF"; display:block; color:#8a7e93; font-size:13px; margin-top:2px;
+        }
+        [data-testid="stFileUploaderDropzone"] button{ font-size:0 !important; }
+        [data-testid="stFileUploaderDropzone"] button::after{ content:"Seleccionar"; font-size:14px !important; font-weight:700; }
+
         /* ===== Botón primario "Generar" ===== */
         .stButton>button[kind="primary"], [data-testid="stBaseButton-primary"]{
           background:linear-gradient(135deg,var(--morado) 0%, var(--naranja) 120%) !important;
@@ -1074,13 +1086,6 @@ def main():
         with open(logo_path, "rb") as _f:
             _b64 = base64.b64encode(_f.read()).decode()
         logo_inner = f"<img src='data:image/png;base64,{_b64}'>"
-
-    # ---- Cerrar sesión (arriba a la derecha) ----
-    _, c_out = st.columns([4, 1])
-    with c_out:
-        if st.button("Cerrar sesión", use_container_width=True):
-            st.session_state.pop("acceso_autorizado", None)
-            st.rerun()
 
     # ---- Encabezado ----
     st.html(f"""
@@ -1287,9 +1292,17 @@ def main():
         if st.session_state.get("sheets_url"):
             st.markdown(f"🔗 [Abrir la hoja en Google Sheets]({st.session_state['sheets_url']})")
 
+    # ---- Cerrar sesión (abajo, discreto) ----
+    st.html("<div style='height:26px'></div>")
+    _, c_out = st.columns([3, 1])
+    with c_out:
+        if st.button("Cerrar sesión", use_container_width=True):
+            st.session_state.pop("acceso_autorizado", None)
+            st.rerun()
+
     # Pie de página de marca
     st.markdown(
-        "<hr style='border:none;border-top:1px solid #e7dcef;margin:36px 0 10px;'>"
+        "<hr style='border:none;border-top:1px solid #e7dcef;margin:18px 0 10px;'>"
         "<div style='text-align:center;color:#9b8aa6;font-size:12px;'>"
         "<b style='color:#702080;'>INNquietus</b> · Reporte de Asociados</div>",
         unsafe_allow_html=True)
