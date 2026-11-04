@@ -925,13 +925,15 @@ def _validar_acceso():
         }
         /* El formulario no debe dibujar su propia caja */
         [data-testid="stForm"]{ border:none !important; background:transparent !important; padding:0 !important; box-shadow:none !important; }
-        /* Enmascara el campo de acceso con puntitos SIN ser type=password
-           (así ningún navegador ofrece guardar la contraseña) */
-        [class*="st-key-clave_login"] input{
-            -webkit-text-security:disc !important; text-security:disc !important;
+        /* Espaciado solo a los puntitos (oculto), no al texto visible ni al de ayuda */
+        [class*="st-key-clave_login"] input[type="password"]:not(:placeholder-shown){ letter-spacing:.12em; }
+        /* Ojito (mostrar/ocultar): va dentro de la misma caja del campo */
+        [data-testid="stTextInputRootElement"] button{
+            background:transparent !important; border:none !important; color:#702080 !important;
+            padding:0 14px 0 6px !important; height:100% !important; cursor:pointer; opacity:.75;
         }
-        /* espaciado solo a los puntitos, no al texto de ayuda */
-        [class*="st-key-clave_login"] input:not(:placeholder-shown){ letter-spacing:.12em; }
+        [data-testid="stTextInputRootElement"] button:hover{ opacity:1; }
+        [data-testid="stTextInputRootElement"] button svg{ fill:#702080 !important; }
         .login-top{ text-align:center; }
         .login-icon{
             width:70px;height:70px;margin:2px auto 16px;border-radius:22px;
@@ -979,10 +981,10 @@ def _validar_acceso():
             </div>
         """)
         with st.form("login_form", border=False, clear_on_submit=False):
-            # Campo de texto normal (NO type="password") enmascarado con CSS.
-            # Así el navegador no lo reconoce como contraseña y no ofrece guardarla.
+            # Campo de contraseña nativo (con el ojito para mostrar/ocultar).
             clave_ingresada = st.text_input(
                 "Contraseña de acceso",
+                type="password",
                 placeholder="Escribe la contraseña",
                 label_visibility="collapsed",
                 key="clave_login",
