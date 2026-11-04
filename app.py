@@ -1430,8 +1430,9 @@ def main():
             diferencia = total_extraido - compras_oficiales
             signo = "+" if diferencia > 0 else ""
             st.warning(
-                f"⚠️ Diferencia de total: PDF ${compras_oficiales:,} vs suma ${total_extraido:,} "
-                f"({signo}${diferencia:,}). Se conserva la suma por asociada."
+                # Los "$" van escapados (\$): en Markdown dos "$" se leen como fórmula matemática.
+                f"⚠️ Diferencia de total: PDF \\${compras_oficiales:,} vs suma \\${total_extraido:,} "
+                f"({signo}\\${diferencia:,}). Se conserva la suma por asociada."
             )
 
         # --- Resumen en tarjetas (KPIs) ---
