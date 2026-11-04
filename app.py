@@ -925,6 +925,12 @@ def _validar_acceso():
         }
         /* El formulario no debe dibujar su propia caja */
         [data-testid="stForm"]{ border:none !important; background:transparent !important; padding:0 !important; box-shadow:none !important; }
+        /* Enmascara el campo de acceso con puntitos SIN ser type=password
+           (así ningún navegador ofrece guardar la contraseña) */
+        [class*="st-key-clave_login"] input{
+            -webkit-text-security:disc !important; text-security:disc !important;
+            letter-spacing:.12em;
+        }
         .login-top{ text-align:center; }
         .login-icon{
             width:70px;height:70px;margin:2px auto 16px;border-radius:22px;
@@ -956,7 +962,7 @@ def _validar_acceso():
 
     # Todo el login dentro de UNA sola tarjeta centrada.
     # Usamos st.form para que al presionar Enter en la contraseña intente entrar.
-    with st.container(border=True, key="glasscard_login"):
+    with st.container(border=False, key="glasscard_login"):
         st.html("""
             <div class="login-top">
                 <div class="login-icon">🔐</div>
@@ -966,9 +972,10 @@ def _validar_acceso():
             </div>
         """)
         with st.form("login_form", border=False, clear_on_submit=False):
+            # Campo de texto normal (NO type="password") enmascarado con CSS.
+            # Así el navegador no lo reconoce como contraseña y no ofrece guardarla.
             clave_ingresada = st.text_input(
                 "Contraseña de acceso",
-                type="password",
                 placeholder="Escribe la contraseña",
                 label_visibility="collapsed",
                 key="clave_login",
@@ -1148,7 +1155,7 @@ def main():
 
     # ---------- Configuración ----------
     st.html('<div class="sec">Configuración</div>')
-    with st.container(border=True, key="glasscard_config"):
+    with st.container(border=False, key="glasscard_config"):
         titulo_reporte = st.text_input("Título del reporte", value="Reporte de Asociados")
         usar_ia = st.checkbox("🤖 Corregir nombres con IA (recomendado)", value=True)
         proveedor, api_key = "Claude", ""
@@ -1302,7 +1309,7 @@ def main():
 
         # --- Tabla + descargas ---
         st.html('<div class="sec">Detalle y descargas</div>')
-        with st.container(border=True, key="glasscard_tabla"):
+        with st.container(border=False, key="glasscard_tabla"):
             st.dataframe(
                 [{"#": i, "Nombre del Asociado": r["nombre"], "Total de Pedidos": r["pedidos"],
                   "Total Compras Catálogo Actual": f"${r['ingresos']:,}"} for i, r in enumerate(filas, 1)],
