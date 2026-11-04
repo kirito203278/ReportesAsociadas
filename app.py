@@ -1235,7 +1235,7 @@ def main():
         st.dataframe(
             [{"Nombre del Asociado": r["nombre"], "Total de Pedidos": r["pedidos"],
               "Total Compras Catálogo Actual": f"${r['ingresos']:,}"} for r in filas],
-            width="stretch", hide_index=True)
+            use_container_width=True, hide_index=True)
 
         col1, col2 = st.columns(2)
         with col1:
