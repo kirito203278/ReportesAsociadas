@@ -916,13 +916,15 @@ def _validar_acceso():
             background-attachment:fixed !important; }
         .block-container{ max-width:480px !important; padding-top:11vh !important; }
 
-        /* La tarjeta de vidrio (container con borde) */
-        div[data-testid="stVerticalBlockBorderWrapper"]{
+        /* La tarjeta de vidrio del login (solo la marcada con key) */
+        [class*="st-key-glasscard"]{
             background:rgba(255,255,255,.55) !important; border:1px solid rgba(255,255,255,.65) !important;
             border-radius:24px !important; box-shadow:0 24px 60px rgba(112,32,128,.16) !important;
             padding:30px 30px 26px !important;
             backdrop-filter:blur(20px) saturate(150%) !important; -webkit-backdrop-filter:blur(20px) saturate(150%) !important;
         }
+        /* El formulario no debe dibujar su propia caja */
+        [data-testid="stForm"]{ border:none !important; background:transparent !important; padding:0 !important; box-shadow:none !important; }
         .login-top{ text-align:center; }
         .login-icon{
             width:70px;height:70px;margin:2px auto 16px;border-radius:22px;
@@ -954,7 +956,7 @@ def _validar_acceso():
 
     # Todo el login dentro de UNA sola tarjeta centrada.
     # Usamos st.form para que al presionar Enter en la contraseña intente entrar.
-    with st.container(border=True):
+    with st.container(border=True, key="glasscard_login"):
         st.html("""
             <div class="login-top">
                 <div class="login-icon">🔐</div>
@@ -998,8 +1000,7 @@ def main():
             radial-gradient(620px 440px at 10% 8%, rgba(242,92,0,.20), transparent 60%),
             radial-gradient(720px 520px at 92% 14%, rgba(112,32,128,.24), transparent 60%),
             radial-gradient(680px 560px at 50% 104%, rgba(242,229,0,.16), transparent 60%),
-            linear-gradient(160deg,#f6eefc 0%, #f2e9f8 100%) !important;
-            background-attachment:fixed !important; }
+            linear-gradient(160deg,#f6eefc 0%, #f2e9f8 100%) !important; }
         header[data-testid="stHeader"]{ background:transparent !important; }
         .block-container{ max-width:760px !important; padding-top:2.2rem !important; padding-bottom:3rem !important; }
         h1,h2,h3,h4,h5,h6{ color:var(--morado-osc) !important; letter-spacing:-.01em; }
@@ -1098,8 +1099,8 @@ def main():
         [data-testid="stMetricLabel"] *{ color:#6a5f74 !important;font-weight:700 !important; }
         [data-testid="stMetricValue"]{ color:var(--morado) !important;font-weight:800 !important; }
 
-        /* ===== Tarjetas de vidrio (container border) ===== */
-        div[data-testid="stVerticalBlockBorderWrapper"]{
+        /* ===== Tarjetas de vidrio: SOLO las marcadas con key (no columnas ni el main) ===== */
+        [class*="st-key-glasscard"]{
           background:rgba(255,255,255,.55) !important;border:1px solid rgba(255,255,255,.65) !important;border-radius:20px !important;
           box-shadow:0 18px 50px rgba(112,32,128,.12) !important;padding:12px 20px 16px !important;
           backdrop-filter:blur(18px) saturate(150%) !important; -webkit-backdrop-filter:blur(18px) saturate(150%) !important;
@@ -1147,7 +1148,7 @@ def main():
 
     # ---------- Configuración ----------
     st.html('<div class="sec">Configuración</div>')
-    with st.container(border=True):
+    with st.container(border=True, key="glasscard_config"):
         titulo_reporte = st.text_input("Título del reporte", value="Reporte de Asociados")
         usar_ia = st.checkbox("🤖 Corregir nombres con IA (recomendado)", value=True)
         proveedor, api_key = "Claude", ""
@@ -1301,7 +1302,7 @@ def main():
 
         # --- Tabla + descargas ---
         st.html('<div class="sec">Detalle y descargas</div>')
-        with st.container(border=True):
+        with st.container(border=True, key="glasscard_tabla"):
             st.dataframe(
                 [{"#": i, "Nombre del Asociado": r["nombre"], "Total de Pedidos": r["pedidos"],
                   "Total Compras Catálogo Actual": f"${r['ingresos']:,}"} for i, r in enumerate(filas, 1)],
