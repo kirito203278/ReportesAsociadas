@@ -929,8 +929,9 @@ def _validar_acceso():
            (así ningún navegador ofrece guardar la contraseña) */
         [class*="st-key-clave_login"] input{
             -webkit-text-security:disc !important; text-security:disc !important;
-            letter-spacing:.12em;
         }
+        /* espaciado solo a los puntitos, no al texto de ayuda */
+        [class*="st-key-clave_login"] input:not(:placeholder-shown){ letter-spacing:.12em; }
         .login-top{ text-align:center; }
         .login-icon{
             width:70px;height:70px;margin:2px auto 16px;border-radius:22px;
@@ -943,12 +944,18 @@ def _validar_acceso():
         .login-barra{ height:5px;border-radius:4px;margin:16px 0 6px;
             background:linear-gradient(90deg,#702080 0 33%,#F2E500 33% 66%,#F25C00 66% 100%); }
 
-        .stTextInput input{
+        /* Campo del login: se estiliza el contenedor real de Streamlit (Root), no el <input> */
+        [data-testid="stTextInputRootElement"]{
             height:52px !important;border:1.5px solid rgba(112,32,128,.18) !important;border-radius:13px !important;
-            font-size:16px !important;background:rgba(255,255,255,.7) !important;color:#2b2330 !important;
+            background:rgba(255,255,255,.75) !important;
         }
-        .stTextInput input:focus{ border-color:#702080 !important;
+        [data-testid="stTextInputRootElement"]:focus-within{ border-color:#702080 !important;
             box-shadow:0 0 0 3px rgba(112,32,128,.13) !important; }
+        [data-testid="stTextInputRootElement"] [data-baseweb="base-input"],
+        [data-testid="stTextInputRootElement"] input{
+            background:transparent !important;border:none !important;box-shadow:none !important;
+            height:100% !important;font-size:16px !important;color:#2b2330 !important;
+        }
         /* Botón Entrar (cubre botón normal y de formulario) */
         .stButton>button, [data-testid="stFormSubmitButton"] button{
             background:linear-gradient(135deg,#702080 0%,#F25C00 120%) !important;color:#fff !important;
@@ -1028,10 +1035,16 @@ def main():
         .sec{ font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#9a86a8;margin:24px 0 8px; }
 
         /* ===== Inputs ===== */
-        .stTextInput input{ background:rgba(255,255,255,.7) !important;color:var(--tinta) !important;
+        /* Streamlit pone borde y altura en el contenedor (stTextInputRootElement),
+           NO en el <input>. Se estiliza el contenedor y el input queda transparente. */
+        [data-testid="stTextInputRootElement"]{ height:46px !important;
+          background:rgba(255,255,255,.75) !important;
           border:1.5px solid rgba(112,32,128,.16) !important;border-radius:12px !important; }
-        .stTextInput input:focus{ border-color:var(--morado) !important;
+        [data-testid="stTextInputRootElement"]:focus-within{ border-color:var(--morado) !important;
           box-shadow:0 0 0 3px rgba(112,32,128,.12) !important; }
+        [data-testid="stTextInputRootElement"] [data-baseweb="base-input"],
+        [data-testid="stTextInputRootElement"] input{ background:transparent !important;border:none !important;
+          box-shadow:none !important;height:100% !important;color:var(--tinta) !important; }
 
         /* ===== Zona de carga (vidrio) ===== */
         [data-testid="stFileUploader"]{
