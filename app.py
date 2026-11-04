@@ -904,7 +904,7 @@ def _validar_acceso():
         [data-testid="stSidebar"]{ display:none !important; }
         header[data-testid="stHeader"]{ background:transparent !important; }
         .stApp{ background: radial-gradient(1100px 520px at 50% -5%, #f3e8fb 0%, #faf6fb 55%) !important; }
-        .block-container{ max-width:460px !important; padding-top:12vh !important; }
+        .block-container{ max-width:480px !important; padding-top:11vh !important; }
 
         /* La tarjeta (container con borde) */
         div[data-testid="stVerticalBlockBorderWrapper"]{
@@ -925,8 +925,8 @@ def _validar_acceso():
             background:linear-gradient(90deg,#702080 0 33%,#F2E500 33% 66%,#F25C00 66% 100%); }
 
         .stTextInput input{
-            height:50px !important;border:1.5px solid #e4d7ee !important;border-radius:13px !important;
-            font-size:16px !important;background:#fff !important;color:#2b2330 !important;text-align:center;
+            height:52px !important;border:1.5px solid #e4d7ee !important;border-radius:13px !important;
+            font-size:16px !important;background:#fff !important;color:#2b2330 !important;
         }
         .stTextInput input:focus{ border-color:#702080 !important;
             box-shadow:0 0 0 3px rgba(112,32,128,.13) !important; }
@@ -973,51 +973,40 @@ def _validar_acceso():
 # INTERFAZ
 # ============================================================================
 def main():
-    st.set_page_config(page_title="Reporte de Asociados", page_icon="📊", layout="wide")
+    st.set_page_config(page_title="Reporte de Asociados", page_icon="📊", layout="centered")
     st.html("""
         <style>
         :root{
           --morado:#702080; --morado-osc:#4A1560; --naranja:#F25C00;
           --amarillo:#F2E500; --tinta:#2b2330; --borde:#ece3f2;
         }
-
         .stApp{ background:#f7f2fb !important; }
         header[data-testid="stHeader"]{ background:transparent !important; }
-
-        /* Contenido central enfocado */
-        .block-container{ max-width:760px !important; padding-top:2.4rem !important; padding-bottom:3rem !important; }
+        .block-container{ max-width:760px !important; padding-top:2.2rem !important; padding-bottom:3rem !important; }
         h1,h2,h3,h4,h5,h6{ color:var(--morado-osc) !important; letter-spacing:-.01em; }
         .stCaption, .stMarkdown p{ color:var(--tinta) !important; }
         div[data-testid="InputInstructions"]{ display:none !important; }
 
-        /* ===== Barra lateral ===== */
-        [data-testid="stSidebar"]{
-          background:linear-gradient(180deg,#2a0f33 0%, #4A1560 100%) !important;
-          border-right:none !important;
-        }
-        [data-testid="stSidebar"] *{ color:#f3e9f7 !important; }
-        [data-testid="stSidebar"] .stCaption, [data-testid="stSidebar"] .stCaption *{ color:#c9b2d6 !important; }
-        .side-brand{ display:flex; align-items:center; gap:12px; padding:6px 2px 2px; }
-        .side-brand img{ height:46px;width:auto;border-radius:10px; }
-        .side-kicker{ font-size:12px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#F2E500 !important; }
-        .side-kicker b{ color:#fff !important; font-weight:800; }
-        .side-app{ font-size:20px;font-weight:800;color:#fff !important;margin-top:-2px; }
-        .side-h{ font-size:12px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
-                 color:#c9b2d6 !important;margin:18px 0 2px; }
-        [data-testid="stSidebar"] .stTextInput input{
-          background:rgba(255,255,255,.08) !important;border:1.5px solid rgba(255,255,255,.18) !important;
-          color:#fff !important;border-radius:11px !important;
-        }
-        [data-testid="stSidebar"] .stTextInput input::placeholder{ color:#c9b2d6 !important; }
-
-        /* ===== Hero ===== */
-        .hero-kicker{ font-size:13px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--naranja); }
-        .hero-kicker b{ color:var(--morado); }
-        .hero-title{ font-size:40px;font-weight:800;color:var(--morado-osc);margin:2px 0 0;line-height:1.05; }
-        .hero-bar{ height:6px;width:120px;border-radius:4px;margin:12px 0 2px;
+        /* ===== Encabezado (hero) ===== */
+        .head{ display:flex; align-items:center; gap:16px; }
+        .logo-tile{ width:58px;height:58px;border-radius:15px;display:flex;align-items:center;justify-content:center;
+          font-size:27px;background:linear-gradient(135deg,var(--morado),var(--naranja));
+          box-shadow:0 10px 22px rgba(112,32,128,.24); overflow:hidden; }
+        .logo-tile img{ width:100%;height:100%;object-fit:cover; }
+        .kicker{ font-size:13px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:var(--naranja); }
+        .kicker b{ color:var(--morado); }
+        .title{ font-size:38px;font-weight:800;color:var(--morado-osc);margin:2px 0 0;line-height:1.05; }
+        .barL{ height:6px;width:120px;border-radius:4px;margin:12px 0 2px;
           background:linear-gradient(90deg,var(--morado) 0 33%,var(--amarillo) 33% 66%,var(--naranja) 66% 100%); }
+        .sec{ font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#9a86a8;margin:24px 0 8px; }
 
-        /* ===== Zona de carga grande ===== */
+        /* ===== Inputs ===== */
+        .stTextInput input{ background:#fff !important;color:var(--tinta) !important;
+          border:1.5px solid var(--borde) !important;border-radius:12px !important; }
+        .stTextInput input:focus{ border-color:var(--morado) !important;
+          box-shadow:0 0 0 3px rgba(112,32,128,.12) !important; }
+
+        /* ===== Zona de carga ===== */
         [data-testid="stFileUploader"]{
           background:#fff !important; border:2px dashed #c9a9d6 !important; border-radius:16px;
           box-shadow:0 10px 30px rgba(112,32,128,.06);
@@ -1029,12 +1018,6 @@ def main():
           background:var(--morado) !important; color:#fff !important; border:none !important; border-radius:10px !important;
         }
         [data-testid="stFileUploaderDropzone"] button *{ color:#fff !important; }
-
-        /* ===== Inputs ===== */
-        .stTextInput input{ background:#fff !important;color:var(--tinta) !important;
-          border:1.5px solid var(--borde) !important;border-radius:12px !important; }
-        .stTextInput input:focus{ border-color:var(--morado) !important;
-          box-shadow:0 0 0 3px rgba(112,32,128,.12) !important; }
 
         /* ===== Botón primario "Generar" ===== */
         .stButton>button[kind="primary"], [data-testid="stBaseButton-primary"]{
@@ -1048,10 +1031,8 @@ def main():
         .stButton>button[kind="primary"]:disabled, [data-testid="stBaseButton-primary"]:disabled{
           background:#d9c7e2 !important;color:#fdf6ff !important;box-shadow:none !important;cursor:not-allowed !important;filter:none !important;
         }
-        [data-testid="stSidebar"] .stButton>button{ background:rgba(255,255,255,.1) !important;border:1.5px solid rgba(255,255,255,.25) !important;color:#fff !important;border-radius:11px !important;font-weight:700 !important; }
-        [data-testid="stSidebar"] .stButton>button *{ color:#fff !important; }
 
-        /* ===== Botón secundario (Sheets) y descargas ===== */
+        /* ===== Botones secundarios (Sheets, cerrar sesión) y descargas ===== */
         [data-testid="stBaseButton-secondary"],
         [data-testid="stDownloadButton"] button{
           background:#fff !important;color:var(--morado) !important;border:1.5px solid var(--morado) !important;
@@ -1060,7 +1041,7 @@ def main():
         [data-testid="stBaseButton-secondary"] *, [data-testid="stDownloadButton"] button *{ color:var(--morado) !important; }
         [data-testid="stDownloadButton"] button:hover, [data-testid="stBaseButton-secondary"]:hover{ background:#f6edfa !important; }
 
-        /* ===== Tarjetas de métricas (st.metric) ===== */
+        /* ===== Tarjetas de métricas ===== */
         [data-testid="stMetric"]{
           background:#fff !important;border:1px solid var(--borde) !important;border-radius:16px !important;
           padding:14px 18px !important;box-shadow:0 8px 24px rgba(112,32,128,.06) !important;
@@ -1068,43 +1049,52 @@ def main():
         [data-testid="stMetricLabel"] *{ color:#7a6f84 !important;font-weight:700 !important; }
         [data-testid="stMetricValue"]{ color:var(--morado) !important;font-weight:800 !important; }
 
-        /* ===== Tarjeta de resultado ===== */
+        /* ===== Tarjetas (container border) ===== */
         div[data-testid="stVerticalBlockBorderWrapper"]{
           background:#fff !important;border:1px solid var(--borde) !important;border-radius:18px !important;
-          box-shadow:0 12px 34px rgba(112,32,128,.08) !important;padding:10px 20px 16px !important;
+          box-shadow:0 12px 34px rgba(112,32,128,.08) !important;padding:12px 20px 16px !important;
         }
         [data-testid="stDataFrame"]{ border-radius:12px;overflow:hidden;border:1px solid var(--borde); }
         [data-testid="stAlert"]{ border-radius:12px; }
-
-        .sec{ font-size:13px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:#9a86a8;margin:26px 0 8px; }
         </style>
     """)
 
     _validar_acceso()
 
-    # Logo embebido (base64) para el encabezado de la barra lateral.
+    # Logo embebido (base64) para el encabezado.
     import base64
     logo_path = _ruta_junto_app("logo.png")
-    logo_img = ""
+    logo_inner = "📊"
     if os.path.exists(logo_path):
         with open(logo_path, "rb") as _f:
             _b64 = base64.b64encode(_f.read()).decode()
-        logo_img = f"<img src='data:image/png;base64,{_b64}'>"
+        logo_inner = f"<img src='data:image/png;base64,{_b64}'>"
 
-    # ===================== BARRA LATERAL: marca + configuración =====================
-    with st.sidebar:
-        st.html(f"""
-            <div class="side-brand">
-              {logo_img}
-              <div>
-                <div class="side-kicker"><b>INN</b>quietus</div>
-                <div class="side-app">Reportes</div>
-              </div>
-            </div>
-        """)
-        st.html('<div class="side-h">Configuración</div>')
+    # ---- Cerrar sesión (arriba a la derecha) ----
+    _, c_out = st.columns([4, 1])
+    with c_out:
+        if st.button("Cerrar sesión", use_container_width=True):
+            st.session_state.pop("acceso_autorizado", None)
+            st.rerun()
+
+    # ---- Encabezado ----
+    st.html(f"""
+        <div class="head">
+          <div class="logo-tile">{logo_inner}</div>
+          <div>
+            <div class="kicker"><b>INN</b>quietus · Betterware</div>
+            <div class="title">Reporte de Asociados</div>
+          </div>
+        </div>
+        <div class="barL"></div>
+    """)
+    st.caption("Sube el PDF de actividad, genera el Excel/PDF y crea la hoja de Google. Procesa en un clic.")
+
+    # ---------- Configuración ----------
+    st.html('<div class="sec">Configuración</div>')
+    with st.container(border=True):
         titulo_reporte = st.text_input("Título del reporte", value="Reporte de Asociados")
-        usar_ia = st.checkbox("🤖 Corregir nombres con IA", value=True)
+        usar_ia = st.checkbox("🤖 Corregir nombres con IA (recomendado)", value=True)
         proveedor, api_key = "Claude", ""
         if usar_ia:
             proveedor = st.radio("Proveedor de IA", ["Claude", "Gemini"], horizontal=True, index=0)
@@ -1122,19 +1112,6 @@ def main():
                 api_key = st.text_input(
                     f"API Key de {proveedor}", value="", type="password",
                     help="Se usa solo en esta sesión. No se guarda en el código.")
-
-        st.html('<div class="side-h" style="margin-top:26px;">Sesión</div>')
-        if st.button("Cerrar sesión", use_container_width=True):
-            st.session_state.pop("acceso_autorizado", None)
-            st.rerun()
-
-    # ===================== ÁREA PRINCIPAL =====================
-    st.html("""
-        <div class="hero-kicker"><b>INN</b>quietus · Betterware</div>
-        <div class="hero-title">Reporte de Asociados</div>
-        <div class="hero-bar"></div>
-    """)
-    st.caption("Sube el PDF de actividad, genera el Excel/PDF y crea la hoja de Google. Procesa en un clic.")
 
     # ---------- Subir PDF ----------
     st.html('<div class="sec">Sube tu PDF</div>')
