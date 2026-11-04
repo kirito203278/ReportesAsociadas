@@ -944,7 +944,7 @@ def _validar_acceso():
         .login-barra{ height:5px;border-radius:4px;margin:16px 0 6px;
             background:linear-gradient(90deg,#702080 0 33%,#F2E500 33% 66%,#F25C00 66% 100%); }
 
-        /* Campo del login: se estiliza el contenedor real de Streamlit (Root), no el <input> */
+        /* Campo del login: se estiliza el contenedor real de Streamlit (Root), no el input */
         [data-testid="stTextInputRootElement"]{
             height:52px !important;border:1.5px solid rgba(112,32,128,.18) !important;border-radius:13px !important;
             background:rgba(255,255,255,.75) !important;
@@ -1036,7 +1036,9 @@ def main():
 
         /* ===== Inputs ===== */
         /* Streamlit pone borde y altura en el contenedor (stTextInputRootElement),
-           NO en el <input>. Se estiliza el contenedor y el input queda transparente. */
+           NO en el input. Se estiliza el contenedor y el input queda transparente.
+           OJO: nunca escribir etiquetas con signos de menor/mayor dentro de este
+           bloque de estilos: el filtro DOMPurify de st.html borraria todo el bloque. */
         [data-testid="stTextInputRootElement"]{ height:46px !important;
           background:rgba(255,255,255,.75) !important;
           border:1.5px solid rgba(112,32,128,.16) !important;border-radius:12px !important; }
