@@ -12,7 +12,9 @@ La API key NO se guarda en el código: se pega en la app o se lee de variable de
 import io
 import os
 import re
+import copy
 import json
+import hashlib
 import streamlit as st
 
 
@@ -965,7 +967,13 @@ def _validar_acceso():
             box-shadow:0 12px 24px rgba(112,32,128,.26) !important;
         }
         .stButton>button *, [data-testid="stFormSubmitButton"] button *{ color:#fff !important; }
-        .stButton>button:hover, [data-testid="stFormSubmitButton"] button:hover{ filter:brightness(1.07); }
+        .stButton>button, [data-testid="stFormSubmitButton"] button{
+            transition:box-shadow .2s ease, transform .15s ease !important; }
+        /* Hover de Entrar: degradado más intenso, sube y brilla en naranja */
+        .stButton>button:hover:not(:disabled), [data-testid="stFormSubmitButton"] button:hover:not(:disabled){
+            background:linear-gradient(135deg,#4A1560 0%,#F25C00 75%) !important;
+            box-shadow:0 18px 34px rgba(242,92,0,.32) !important; transform:translateY(-2px);
+        }
         </style>
     """)
 
@@ -1004,6 +1012,30 @@ def _validar_acceso():
 # ============================================================================
 # INTERFAZ
 # ============================================================================
+@st.cache_resource(show_spinner=False)
+def _cache_ia():
+    """Nombres ya corregidos por IA, por (huella del PDF, proveedor).
+
+    Así un mismo PDF no se vuelve a mandar a la misma IA (no se gastan créditos
+    dos veces); con la otra IA sí se puede procesar. Vive mientras el servidor
+    esté encendido (se borra si Render se reinicia o redespliega).
+    """
+    return {}
+
+
+# Estilos que se aplican SOLO mientras se está generando. Ojo: este texto va
+# dentro de un bloque de estilos de st.html, así que no debe llevar etiquetas
+# con signos de menor/mayor (el filtro DOMPurify borraría el bloque entero).
+CSS_BLOQUEO_PROCESO = """
+/* No se puede quitar ni reemplazar el PDF hasta que termine */
+[data-testid="stFileUploader"] [data-testid="stBaseButton-minimal"]{ display:none !important; }
+[data-testid="stFileUploaderDropzone"]{ pointer-events:none !important; opacity:.55 !important; }
+/* Tampoco descargar, crear Sheets ni cerrar sesión a medio proceso */
+[data-testid="stDownloadButton"], [class*="st-key-btn_sheets"], [class*="st-key-logout_btn"]{
+  pointer-events:none !important; opacity:.45 !important; }
+"""
+
+
 def main():
     st.set_page_config(page_title="Reporte de Asociados", page_icon="📊", layout="centered")
     st.html("""
@@ -1081,10 +1113,17 @@ def main():
           background:linear-gradient(135deg,var(--morado) 0%, var(--naranja) 120%) !important;
           color:#fff !important;font-weight:800 !important;font-size:17px !important;
           border:none !important;border-radius:14px !important;padding:14px 22px !important;
-          box-shadow:0 14px 28px rgba(112,32,128,.26) !important; transition:filter .15s, transform .05s;
+          box-shadow:0 14px 28px rgba(112,32,128,.26) !important;
+          transition:box-shadow .2s ease, transform .15s ease, filter .2s ease !important;
         }
-        .stButton>button[kind="primary"]:hover, [data-testid="stBaseButton-primary"]:hover{ filter:brightness(1.07); }
-        .stButton>button[kind="primary"]:active{ transform:translateY(1px); }
+        /* Hover del primario (Generar / Entrar): degradado más intenso, sube y brilla en naranja */
+        [data-testid="stBaseButton-primary"]:hover:not(:disabled),
+        [data-testid="stBaseButton-primaryFormSubmit"]:hover:not(:disabled){
+          background:linear-gradient(135deg,#4A1560 0%, #F25C00 75%) !important;
+          box-shadow:0 18px 34px rgba(242,92,0,.32) !important; transform:translateY(-2px);
+        }
+        [data-testid="stBaseButton-primary"]:active:not(:disabled),
+        [data-testid="stBaseButton-primaryFormSubmit"]:active:not(:disabled){ transform:translateY(0); }
         .stButton>button[kind="primary"]:disabled, [data-testid="stBaseButton-primary"]:disabled{
           background:#d9c7e2 !important;color:#fdf6ff !important;box-shadow:none !important;cursor:not-allowed !important;filter:none !important;
         }
@@ -1096,9 +1135,21 @@ def main():
           border-radius:12px !important;font-weight:700 !important;
           box-shadow:0 6px 18px rgba(112,32,128,.10) !important;
           backdrop-filter:blur(10px) saturate(150%) !important; -webkit-backdrop-filter:blur(10px) saturate(150%) !important;
+          transition:background-color .2s ease, color .2s ease, box-shadow .2s ease, transform .15s ease !important;
         }
         [data-testid="stBaseButton-secondary"] *, [data-testid="stDownloadButton"] button *{ color:var(--morado) !important; }
-        [data-testid="stDownloadButton"] button:hover, [data-testid="stBaseButton-secondary"]:hover{ background:#fff !important; }
+        /* Hover de Excel, PDF, Sheets y Cerrar sesión: se rellenan de morado con texto blanco */
+        [data-testid="stBaseButton-secondary"]:hover:not(:disabled),
+        [data-testid="stDownloadButton"] button:hover:not(:disabled){
+          background:var(--morado) !important; border-color:var(--morado) !important; color:#fff !important;
+          box-shadow:0 10px 24px rgba(112,32,128,.30) !important; transform:translateY(-1px);
+        }
+        [data-testid="stBaseButton-secondary"]:hover:not(:disabled) *,
+        [data-testid="stDownloadButton"] button:hover:not(:disabled) *{ color:#fff !important; }
+        /* El botón Seleccionar del uploader (ya es morado): se oscurece */
+        [data-testid="stFileUploaderDropzone"] button:hover:not(:disabled){
+          background:var(--morado-osc) !important; border-color:var(--morado-osc) !important;
+        }
 
         /* ===== Advertencias / avisos (vidrio, conservando su color) ===== */
         [data-testid="stAlert"]{
@@ -1170,17 +1221,28 @@ def main():
     """)
     st.caption("Sube el PDF de actividad, genera el Excel/PDF y crea la hoja de Google. Procesa en un clic.")
 
+    # ---- Estado de proceso y candado de la interfaz ----
+    # Mientras se genera, todo se bloquea (si se toca algo a media generación,
+    # Streamlit reinicia la corrida y se perdería el trabajo de la IA).
+    # Este bloque se dibuja SIEMPRE (vacío si no procesa) para no mover las
+    # posiciones de los demás elementos.
+    procesando = st.session_state.setdefault("procesando", False)
+    st.html("<style>" + (CSS_BLOQUEO_PROCESO if procesando else "/* sin bloqueo */") + "</style>")
+
     # ---------- Configuración ----------
     st.html('<div class="sec">Configuración</div>')
     with st.container(border=False, key="glasscard_config"):
-        titulo_reporte = st.text_input("Título del reporte", value="Reporte de Asociados")
-        usar_ia = st.checkbox("🤖 Corregir nombres con IA (recomendado)", value=True)
+        titulo_reporte = st.text_input("Título del reporte", value="Reporte de Asociados",
+                                       disabled=procesando)
+        usar_ia = st.checkbox("🤖 Corregir nombres con IA (recomendado)", value=True,
+                              disabled=procesando)
         proveedor, api_key = "Claude", ""
         if usar_ia:
             st.markdown("**Proveedor de IA**")
             proveedor = st.segmented_control(
                 "Proveedor de IA", ["Claude", "Gemini"],
-                default="Claude", selection_mode="single", label_visibility="collapsed")
+                default="Claude", selection_mode="single", label_visibility="collapsed",
+                disabled=procesando)
             if not proveedor:
                 proveedor = "Claude"
             if proveedor == "Claude":
@@ -1196,16 +1258,29 @@ def main():
             else:
                 api_key = st.text_input(
                     f"API Key de {proveedor}", value="", type="password",
-                    help="Se usa solo en esta sesión. No se guarda en el código.")
+                    help="Se usa solo en esta sesión. No se guarda en el código.",
+                    disabled=procesando)
 
-    # ---------- Subir PDF ----------
+    # ---------- Subir PDF (solo uno a la vez) ----------
     st.html('<div class="sec">Sube tu PDF</div>')
     archivo = st.file_uploader("Arrastra o selecciona el PDF", type=["pdf"],
+                               accept_multiple_files=False, disabled=procesando,
                                label_visibility="collapsed")
 
+    # ¿Este PDF ya pasó por la IA? (se compara por huella del archivo, no por nombre)
+    if archivo is not None and usar_ia and not procesando:
+        huella_pdf = hashlib.sha256(archivo.getvalue()).hexdigest()
+        ya_hechos = sorted(p for (h, p) in _cache_ia() if h == huella_pdf)
+        otro = "Gemini" if proveedor == "Claude" else "Claude"
+        if proveedor in ya_hechos:
+            st.info(f"♻️ Este PDF ya se procesó con **{proveedor}**. Al generar se reutiliza ese "
+                    "resultado y **no se vuelve a gastar IA**."
+                    + ("" if otro in ya_hechos else f" Si quieres otra corrección, cambia a **{otro}**."))
+        elif ya_hechos:
+            st.caption(f"ℹ️ Este PDF ya se procesó con {', '.join(ya_hechos)}. "
+                       f"Puedes procesarlo también con {proveedor}.")
+
     # ---------- Generar ----------
-    st.session_state.setdefault("procesando", False)
-    procesando = st.session_state["procesando"]
     etiqueta_btn = "⏳ Generando…" if procesando else "✨ Generar"
     generar = st.button(
         etiqueta_btn, type="primary", use_container_width=True,
@@ -1240,14 +1315,24 @@ def main():
             else:
                 aviso_ia = None  # (tipo, mensaje[, detalle]) para mostrarlo desde la sesión
                 if usar_ia and api_key.strip():
-                    with st.spinner(f"Corrigiendo nombres con {proveedor}…"):
-                        try:
-                            filas = limpiar_nombres_con_ia(texto_crudo, filas, proveedor, api_key.strip())
-                            aviso_ia = ("success", "Nombres corregidos con IA ✅")
-                        except Exception as e:
-                            import traceback
-                            aviso_ia = ("error", f"La IA falló ({e}). Muestro los nombres sin corregir.",
-                                        traceback.format_exc())
+                    cache_ia = _cache_ia()
+                    clave_cache = (hashlib.sha256(pdf_bytes).hexdigest(), proveedor)
+                    if clave_cache in cache_ia:
+                        # Mismo PDF + misma IA: se reutiliza, no se vuelve a llamar a la IA.
+                        filas = copy.deepcopy(cache_ia[clave_cache])
+                        aviso_ia = ("info", f"♻️ Este PDF ya se había procesado con {proveedor}: "
+                                            "reutilicé ese resultado y no se volvió a gastar IA.")
+                    else:
+                        with st.spinner(f"Corrigiendo nombres con {proveedor}…"):
+                            try:
+                                filas = limpiar_nombres_con_ia(texto_crudo, filas, proveedor, api_key.strip())
+                                # Se guarda de inmediato, antes de cualquier otra cosa.
+                                cache_ia[clave_cache] = copy.deepcopy(filas)
+                                aviso_ia = ("success", f"Nombres corregidos con {proveedor} ✅")
+                            except Exception as e:
+                                import traceback
+                                aviso_ia = ("error", f"La IA falló ({e}). Muestro los nombres sin corregir.",
+                                            traceback.format_exc())
                 elif usar_ia:
                     aviso_ia = ("warning", "Marcaste usar IA pero falta la API Key. Procesé sin IA.")
 
@@ -1296,6 +1381,8 @@ def main():
         if aviso:
             if aviso[0] == "success":
                 st.success(aviso[1])
+            elif aviso[0] == "info":
+                st.info(aviso[1])
             elif aviso[0] == "warning":
                 st.warning(aviso[1])
             elif aviso[0] == "error":
@@ -1343,7 +1430,7 @@ def main():
 
         # --- Abrir en Google Sheets (usa el resultado YA procesado; NO llama a la IA) ---
         st.html('<div class="sec">Google Sheets</div>')
-        if st.button("📗 Crear y abrir en Google Sheets", use_container_width=True):
+        if st.button("📗 Crear y abrir en Google Sheets", use_container_width=True, key="btn_sheets"):
             with st.spinner("Creando la hoja en tu Google Drive…"):
                 try:
                     url = subir_a_google_sheets(res["filas"], res["titulo"])
