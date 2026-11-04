@@ -1274,9 +1274,21 @@ def main():
                                accept_multiple_files=False, disabled=procesando,
                                label_visibility="collapsed")
 
-    # ¿Este PDF ya pasó por la IA? (se compara por huella del archivo, no por nombre)
-    if archivo is not None and usar_ia and not procesando:
-        huella_pdf = hashlib.sha256(archivo.getvalue()).hexdigest()
+    # Huella del PDF (se compara por contenido, no por nombre) y "modo" actual.
+    huella_pdf = hashlib.sha256(archivo.getvalue()).hexdigest() if archivo is not None else None
+    modo_actual = proveedor if usar_ia else "sin IA"
+
+    # ¿Los resultados en pantalla ya son de ESTE PDF con ESTA IA? Entonces Generar
+    # se deshabilita hasta que cambies de IA (o subas otro PDF).
+    res_previo = st.session_state.get("resultado")
+    ya_generado = bool(
+        res_previo and huella_pdf
+        and res_previo.get("huella") == huella_pdf
+        and res_previo.get("modo") == modo_actual
+    )
+
+    # ¿Este PDF ya pasó por la IA en otra ocasión?
+    if archivo is not None and usar_ia and not procesando and not ya_generado:
         ya_hechos = sorted(p for (h, p) in _cache_ia() if h == huella_pdf)
         otro = "Gemini" if proveedor == "Claude" else "Claude"
         if proveedor in ya_hechos:
@@ -1291,10 +1303,18 @@ def main():
     etiqueta_btn = "⏳ Generando…" if procesando else "✨ Generar"
     generar = st.button(
         etiqueta_btn, type="primary", use_container_width=True,
-        disabled=procesando or archivo is None,
+        disabled=procesando or archivo is None or ya_generado,
     )
     if archivo is None and not procesando:
         st.caption("Sube un PDF para habilitar el botón **Generar**.")
+    elif ya_generado and not procesando:
+        if usar_ia:
+            otro = "Gemini" if proveedor == "Claude" else "Claude"
+            st.caption(f"✅ Este PDF ya está generado con **{proveedor}**. "
+                       f"Para volver a generarlo, cambia a **{otro}** (o sube otro PDF).")
+        else:
+            st.caption("✅ Este PDF ya está generado sin IA. Para volver a generarlo, "
+                       "activa la IA (o sube otro PDF).")
 
     # Al pulsar: marcamos "procesando" y recargamos, para que el botón quede
     # bloqueado y muestre "Generando…" mientras se hace el trabajo (evita doble clic).
@@ -1365,6 +1385,11 @@ def main():
                     "pdf": generar_pdf(filas, titulo_reporte).getvalue(),
                     "aviso_ia": aviso_ia,
                     "aviso_total": aviso_total,
+                    # Para saber si ya se generó este PDF con esta IA. Si la IA falló
+                    # o faltó la API key, no se marca, así se puede reintentar.
+                    "huella": hashlib.sha256(pdf_bytes).hexdigest(),
+                    "modo": (modo_actual if (not usar_ia or (aviso_ia and aviso_ia[0] in ("success", "info")))
+                             else None),
                 }
                 st.session_state.pop("sheets_url", None)  # el link de Sheets es de otro reporte
         except Exception as e:
