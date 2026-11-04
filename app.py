@@ -919,7 +919,10 @@ def _validar_acceso():
         .block-container{ max-width:480px !important; padding-top:11vh !important; }
 
         /* La tarjeta de vidrio del login (solo la marcada con key) */
-        [class*="st-key-glasscard"]{
+        /* El vidrio va en la capa EXTERNA de la tarjeta: Streamlit mide el ancho
+           dentro de ella, así el margen interno sí se descuenta del contenido. */
+        [data-testid="stVerticalBlockBorderWrapper"]:has(> div > [class*="st-key-glasscard"]){
+            box-sizing:border-box !important;
             background:rgba(255,255,255,.55) !important; border:1px solid rgba(255,255,255,.65) !important;
             border-radius:24px !important; box-shadow:0 24px 60px rgba(112,32,128,.16) !important;
             padding:30px 30px 26px !important;
@@ -1175,7 +1178,11 @@ def main():
         [data-testid="stMetricValue"]{ color:var(--morado) !important;font-weight:800 !important; }
 
         /* ===== Tarjetas de vidrio: SOLO las marcadas con key (no columnas ni el main) ===== */
-        [class*="st-key-glasscard"]{
+        /* Vidrio en la capa EXTERNA de cada tarjeta (no en la interna con la clase):
+           Streamlit mide el ancho dentro de esa capa y se lo da por JS a la tabla;
+           si el margen estuviera en la interna, la tabla se saldría por la derecha. */
+        [data-testid="stVerticalBlockBorderWrapper"]:has(> div > [class*="st-key-glasscard"]){
+          box-sizing:border-box !important;
           background:rgba(255,255,255,.55) !important;border:1px solid rgba(255,255,255,.65) !important;border-radius:20px !important;
           box-shadow:0 18px 50px rgba(112,32,128,.12) !important;padding:12px 20px 16px !important;
           backdrop-filter:blur(18px) saturate(150%) !important; -webkit-backdrop-filter:blur(18px) saturate(150%) !important;
