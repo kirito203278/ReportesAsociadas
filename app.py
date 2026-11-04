@@ -1029,64 +1029,104 @@ def main():
     st.set_page_config(page_title="Reporte de Asociados", page_icon="📊", layout="centered")
     st.html("""
         <style>
-        .stApp { background-color: #faf6fb !important; }
-
-        h1 { color: #702080 !important; }
-        h2, h3, h5 { color: #4a1560 !important; }
-        .stCaption, .stMarkdown p { color: #2b2330 !important; }
-
-        /* Oculta instrucciones pequeñas como “Press Enter to apply” */
-        div[data-testid="InputInstructions"] { display: none !important; }
-
-        /* Inputs generales de la app */
-        .stTextInput input {
-            background-color:#fff !important;
-            color:#2b2330 !important;
-            border:1px solid #702080 !important;
-            border-radius: 10px !important;
+        /* ===== Paleta de marca INNquietus ===== */
+        :root{
+          --morado:#702080; --morado-osc:#4A1560; --naranja:#F25C00;
+          --amarillo:#F2E500; --tinta:#2b2330; --suave:#faf6fb;
+          --borde:#ece3f2;
         }
 
-        /* Uploader */
-        [data-testid="stFileUploader"] {
-            background:#fff !important;
-            border:1px dashed #702080 !important;
-            border-radius:12px;
+        .stApp { background: radial-gradient(1200px 600px at 50% -10%, #f6eefb 0%, #faf6fb 55%) !important; }
+
+        /* Ancho de contenido un poco mayor y con aire */
+        .block-container { max-width: 820px !important; padding-top: 2.2rem !important; }
+
+        h1,h2,h3,h4,h5,h6 { color: var(--morado-osc) !important; letter-spacing:-.01em; }
+        .stCaption, .stMarkdown p { color: var(--tinta) !important; }
+        div[data-testid="InputInstructions"] { display:none !important; }
+
+        /* ===== Tarjetas (st.container(border=True)) ===== */
+        div[data-testid="stVerticalBlockBorderWrapper"]{
+          background:#ffffff !important;
+          border:1px solid var(--borde) !important;
+          border-radius:18px !important;
+          box-shadow:0 10px 30px rgba(112,32,128,.07) !important;
+          padding:6px 20px 14px !important;
+        }
+
+        /* Encabezado de paso: número en degradado + título */
+        .paso{ display:flex; align-items:center; gap:10px; margin:6px 0 2px; }
+        .paso .n{
+          width:30px;height:30px;border-radius:50%;flex:0 0 30px;
+          display:flex;align-items:center;justify-content:center;
+          background:linear-gradient(135deg,var(--morado),var(--naranja));
+          color:#fff;font-weight:800;font-size:15px;
+          box-shadow:0 6px 14px rgba(112,32,128,.25);
+        }
+        .paso .t{ font-size:18px;font-weight:800;color:var(--morado-osc); }
+        .paso .s{ font-size:13px;color:#7a6f84;margin:-2px 0 0 40px; }
+
+        /* ===== Inputs ===== */
+        .stTextInput input, .stTextArea textarea{
+          background:#fff !important; color:var(--tinta) !important;
+          border:1.5px solid var(--borde) !important; border-radius:12px !important;
+        }
+        .stTextInput input:focus{ border-color:var(--morado) !important;
+          box-shadow:0 0 0 3px rgba(112,32,128,.12) !important; }
+
+        /* ===== Uploader ===== */
+        [data-testid="stFileUploader"]{
+          background:#fff !important; border:1.5px dashed #c9a9d6 !important; border-radius:14px;
         }
         [data-testid="stFileUploaderDropzone"],
-        [data-testid="stFileUploaderDropzone"] section,
-        section[data-testid="stFileUploaderDropzone"] {
-            background:#f4ecf7 !important;
-            color:#2b2330 !important;
+        [data-testid="stFileUploaderDropzone"] section{
+          background:#faf4fc !important; color:var(--tinta) !important;
         }
-        [data-testid="stFileUploaderDropzone"] button,
-        [data-testid="stBaseButton-secondary"] {
-            background:#702080 !important;
-            color:#fff !important;
-            border:none !important;
+        [data-testid="stFileUploaderDropzone"] button{
+          background:var(--morado) !important; color:#fff !important; border:none !important;
+          border-radius:10px !important;
         }
-        [data-testid="stFileUploaderDropzone"] button *,
-        [data-testid="stBaseButton-secondary"] * {
-            color:#fff !important;
-        }
+        [data-testid="stFileUploaderDropzone"] button *{ color:#fff !important; }
 
-        /* Botones */
-        .stButton>button,
-        .stDownloadButton>button {
-            background:#702080 !important;
-            color:#fff !important;
-            font-weight:bold;
-            border-radius:10px;
-            border:none;
-            padding:10px 20px;
+        /* ===== Botón primario "Generar" (degradado) ===== */
+        .stButton>button[kind="primary"], [data-testid="stBaseButton-primary"]{
+          background:linear-gradient(135deg,var(--morado) 0%, var(--naranja) 130%) !important;
+          color:#fff !important; font-weight:800 !important; font-size:16px !important;
+          border:none !important; border-radius:14px !important; padding:12px 22px !important;
+          box-shadow:0 12px 24px rgba(112,32,128,.22) !important;
+          transition:transform .05s ease, filter .15s ease;
         }
-        .stButton>button:hover,
-        .stDownloadButton>button:hover {
-            background:#5a1a6b !important;
+        .stButton>button[kind="primary"]:hover, [data-testid="stBaseButton-primary"]:hover{
+          filter:brightness(1.06); }
+        .stButton>button[kind="primary"]:active{ transform:translateY(1px); }
+        .stButton>button[kind="primary"]:disabled, [data-testid="stBaseButton-primary"]:disabled{
+          background:#d9c7e2 !important; color:#fdf6ff !important; box-shadow:none !important;
+          cursor:not-allowed !important; filter:none !important;
         }
-        .stButton>button *,
-        .stDownloadButton>button * {
-            color:#fff !important;
+        .stButton>button *{ color:#fff !important; }
+
+        /* ===== Botón secundario (Sheets) ===== */
+        .stButton>button[kind="secondary"], [data-testid="stBaseButton-secondary"]{
+          background:#fff !important; color:var(--morado) !important;
+          border:1.5px solid var(--morado) !important; border-radius:12px !important; font-weight:700 !important;
         }
+        .stButton>button[kind="secondary"] *, [data-testid="stBaseButton-secondary"] *{ color:var(--morado) !important; }
+        .stButton>button[kind="secondary"]:hover{ background:#f6edfa !important; }
+
+        /* ===== Botones de descarga (Excel / PDF) ===== */
+        [data-testid="stDownloadButton"] button{
+          background:#fff !important; color:var(--morado) !important;
+          border:1.5px solid var(--morado) !important; border-radius:12px !important;
+          font-weight:700 !important; padding:10px 18px !important;
+        }
+        [data-testid="stDownloadButton"] button *{ color:var(--morado) !important; }
+        [data-testid="stDownloadButton"] button:hover{ background:#f6edfa !important; }
+
+        /* ===== Tabla ===== */
+        [data-testid="stDataFrame"]{ border-radius:12px; overflow:hidden; border:1px solid var(--borde); }
+
+        /* ===== Avisos un poco más suaves ===== */
+        [data-testid="stAlert"]{ border-radius:12px; }
         </style>
     """)
 
@@ -1116,89 +1156,119 @@ def main():
     """, unsafe_allow_html=True)
     st.caption("Herramienta privada para procesar reportes CTBT Betterware, generar Excel/PDF y crear Google Sheets.")
 
-    titulo_reporte = st.text_input("Título del reporte", value="Reporte de Asociados")
+    # ---------- Paso 1: Configuración ----------
+    with st.container(border=True):
+        st.html('<div class="paso"><span class="n">1</span><span class="t">Configuración</span></div>')
+        titulo_reporte = st.text_input("Título del reporte", value="Reporte de Asociados")
 
-    st.markdown("##### 🤖 Corregir nombres con IA (recomendado)")
-    usar_ia = st.checkbox("Usar IA para reconstruir los nombres", value=True)
-    proveedor, api_key = "Claude", ""
-    if usar_ia:
-        proveedor = st.radio("Proveedor de IA", ["Claude", "Gemini"], horizontal=True, index=0)
-        if proveedor == "Claude":
-            env_var = "ANTHROPIC_API_KEY"
-        elif proveedor == "Grok":
-            env_var = "XAI_API_KEY"
-        else:
-            env_var = "GEMINI_API_KEY"
-        env_key = os.environ.get(env_var, "")
-        if env_key:
-            # La key viene del .env: NO se muestra en pantalla por seguridad.
-            api_key = env_key
-            st.caption(f"🔒 API Key de {proveedor} cargada del archivo .env (oculta por seguridad).")
-        else:
-            # No hay .env: se pide, pero el campo es de tipo password (puntos).
-            api_key = st.text_input(
-                f"API Key de {proveedor}", value="", type="password",
-                help="Se usa solo en esta sesión. No se guarda en el código.")
+        usar_ia = st.checkbox("🤖 Corregir nombres con IA (recomendado)", value=True)
+        proveedor, api_key = "Claude", ""
+        if usar_ia:
+            proveedor = st.radio("Proveedor de IA", ["Claude", "Gemini"], horizontal=True, index=0)
+            if proveedor == "Claude":
+                env_var = "ANTHROPIC_API_KEY"
+            elif proveedor == "Grok":
+                env_var = "XAI_API_KEY"
+            else:
+                env_var = "GEMINI_API_KEY"
+            env_key = os.environ.get(env_var, "")
+            if env_key:
+                # La key viene del .env: NO se muestra en pantalla por seguridad.
+                api_key = env_key
+                st.caption(f"🔒 API Key de {proveedor} cargada del archivo .env (oculta por seguridad).")
+            else:
+                # No hay .env: se pide, pero el campo es de tipo password (puntos).
+                api_key = st.text_input(
+                    f"API Key de {proveedor}", value="", type="password",
+                    help="Se usa solo en esta sesión. No se guarda en el código.")
 
-    archivo = st.file_uploader("Arrastra o selecciona el PDF", type=["pdf"])
+    # ---------- Paso 2: Subir PDF ----------
+    with st.container(border=True):
+        st.html('<div class="paso"><span class="n">2</span><span class="t">Sube tu PDF</span></div>')
+        archivo = st.file_uploader("Arrastra o selecciona el PDF", type=["pdf"],
+                                   label_visibility="collapsed")
+
+    # ---------- Paso 3: Generar ----------
+    st.session_state.setdefault("procesando", False)
+    procesando = st.session_state["procesando"]
+    etiqueta_btn = "⏳ Generando…" if procesando else "✨ Generar"
+    generar = st.button(
+        etiqueta_btn, type="primary", use_container_width=True,
+        disabled=procesando or archivo is None,
+    )
+    if archivo is None and not procesando:
+        st.caption("Sube un PDF para habilitar el botón **Generar**.")
+
+    # Al pulsar: marcamos "procesando" y recargamos, para que el botón quede
+    # bloqueado y muestre "Generando…" mientras se hace el trabajo (evita doble clic).
+    if generar and archivo is not None:
+        st.session_state["procesando"] = True
+        st.rerun()
 
     # ========================================================================
-    # PROCESO (esto SÍ consume créditos de IA): corre SOLO al pulsar el botón.
-    # El resultado se guarda en st.session_state para no repetirlo en cada
-    # recarga de la interfaz. Así, tocar otros controles o descargar archivos
-    # NO vuelve a llamar a la IA ni gasta créditos. Solo se renueva cuando
-    # vuelves a pulsar "Procesar PDF" con un archivo.
+    # PROCESO (esto SÍ consume créditos de IA): corre SOLO cuando está marcado
+    # "procesando". El resultado se guarda en st.session_state para no repetirlo
+    # en cada recarga; tocar otros controles o descargar NO vuelve a llamar a la IA.
     # ========================================================================
-    if archivo is not None and st.button("🚀 Procesar PDF"):
-        with st.spinner("Leyendo el PDF…"):
-            pdf_bytes = archivo.read()
-            try:
+    if st.session_state["procesando"]:
+        st.session_state.pop("error_proceso", None)
+        if archivo is None:
+            st.session_state["procesando"] = False
+            st.rerun()
+        try:
+            with st.spinner("Leyendo el PDF…"):
+                pdf_bytes = archivo.getvalue()
                 filas, texto_crudo = extraer(pdf_bytes)
-            except Exception as e:
-                st.error(f"Error al leer el PDF: {e}"); st.stop()
-        if not filas:
-            st.error("No detecté filas de asociados. ¿El PDF tiene el formato esperado?"); st.stop()
+            if not filas:
+                st.session_state["error_proceso"] = (
+                    "No detecté filas de asociados. ¿El PDF tiene el formato esperado?")
+            else:
+                aviso_ia = None  # (tipo, mensaje[, detalle]) para mostrarlo desde la sesión
+                if usar_ia and api_key.strip():
+                    with st.spinner(f"Corrigiendo nombres con {proveedor}…"):
+                        try:
+                            filas = limpiar_nombres_con_ia(texto_crudo, filas, proveedor, api_key.strip())
+                            aviso_ia = ("success", "Nombres corregidos con IA ✅")
+                        except Exception as e:
+                            import traceback
+                            aviso_ia = ("error", f"La IA falló ({e}). Muestro los nombres sin corregir.",
+                                        traceback.format_exc())
+                elif usar_ia:
+                    aviso_ia = ("warning", "Marcaste usar IA pero falta la API Key. Procesé sin IA.")
 
-        aviso_ia = None  # (tipo, mensaje[, detalle]) para mostrarlo luego desde la sesión
-        if usar_ia and api_key.strip():
-            with st.spinner(f"Corrigiendo nombres con {proveedor}…"):
-                try:
-                    filas = limpiar_nombres_con_ia(texto_crudo, filas, proveedor, api_key.strip())
-                    aviso_ia = ("success", "Nombres corregidos con IA ✅")
-                except Exception as e:
-                    import traceback
-                    aviso_ia = ("error", f"La IA falló ({e}). Muestro los nombres sin corregir.",
-                                traceback.format_exc())
-        elif usar_ia:
-            aviso_ia = ("warning", "Marcaste usar IA pero falta la API Key. Procesé sin IA.")
+                filas.sort(key=lambda r: (-r["ingresos"], -r["pedidos"]))
 
-        filas.sort(key=lambda r: (-r["ingresos"], -r["pedidos"]))
+                total_extraido = sum(r["ingresos"] for r in filas)
+                pedidos_extraidos = sum(r["pedidos"] for r in filas)
+                total_oficial = extraer_total_oficial_catalogo_actual(texto_crudo)
+                aviso_total = None
+                if total_oficial:
+                    pedidos_oficiales, compras_oficiales, linea_total = total_oficial
+                    if compras_oficiales != total_extraido or pedidos_oficiales != pedidos_extraidos:
+                        aviso_total = (
+                            pedidos_oficiales, compras_oficiales,
+                            pedidos_extraidos, total_extraido, linea_total,
+                        )
 
-        total_extraido = sum(r["ingresos"] for r in filas)
-        pedidos_extraidos = sum(r["pedidos"] for r in filas)
-        total_oficial = extraer_total_oficial_catalogo_actual(texto_crudo)
-        aviso_total = None
-        if total_oficial:
-            pedidos_oficiales, compras_oficiales, linea_total = total_oficial
-            if compras_oficiales != total_extraido or pedidos_oficiales != pedidos_extraidos:
-                aviso_total = (
-                    pedidos_oficiales,
-                    compras_oficiales,
-                    pedidos_extraidos,
-                    total_extraido,
-                    linea_total,
-                )
+                # Se genera el Excel y el PDF una sola vez y se guardan en la sesión.
+                st.session_state["resultado"] = {
+                    "filas": filas,
+                    "titulo": titulo_reporte,
+                    "excel": generar_excel(filas, titulo_reporte).getvalue(),
+                    "pdf": generar_pdf(filas, titulo_reporte).getvalue(),
+                    "aviso_ia": aviso_ia,
+                    "aviso_total": aviso_total,
+                }
+                st.session_state.pop("sheets_url", None)  # el link de Sheets es de otro reporte
+        except Exception as e:
+            st.session_state["error_proceso"] = f"Error al leer el PDF: {e}"
+        finally:
+            st.session_state["procesando"] = False
+        st.rerun()
 
-        # Se genera el Excel y el PDF una sola vez y se guardan como bytes en la sesión.
-        st.session_state["resultado"] = {
-            "filas": filas,
-            "titulo": titulo_reporte,
-            "excel": generar_excel(filas, titulo_reporte).getvalue(),
-            "pdf": generar_pdf(filas, titulo_reporte).getvalue(),
-            "aviso_ia": aviso_ia,
-            "aviso_total": aviso_total,
-        }
-        st.session_state.pop("sheets_url", None)  # el link de Sheets es de otro reporte
+    # Error del último intento (si lo hubo)
+    if st.session_state.get("error_proceso"):
+        st.error(st.session_state["error_proceso"])
 
     # ========================================================================
     # RENDER (gratis): se dibuja en CADA recarga leyendo de la sesión.
@@ -1230,20 +1300,23 @@ def main():
                 f"({signo}${diferencia:,}). Se conserva la suma por asociada."
             )
 
-        st.success(f"✅ Procesado: {len(filas)} asociados. "
-                   "El resultado se queda en pantalla; solo se renueva al procesar otro PDF.")
-        st.dataframe(
-            [{"Nombre del Asociado": r["nombre"], "Total de Pedidos": r["pedidos"],
-              "Total Compras Catálogo Actual": f"${r['ingresos']:,}"} for r in filas],
-            use_container_width=True, hide_index=True)
+        with st.container(border=True):
+            st.html('<div class="paso"><span class="n">3</span><span class="t">Resultado</span></div>')
+            st.success(f"✅ Procesado: {len(filas)} asociados. "
+                       "El resultado se queda en pantalla; solo se renueva al generar otro PDF.")
+            st.dataframe(
+                [{"Nombre del Asociado": r["nombre"], "Total de Pedidos": r["pedidos"],
+                  "Total Compras Catálogo Actual": f"${r['ingresos']:,}"} for r in filas],
+                use_container_width=True, hide_index=True)
 
-        col1, col2 = st.columns(2)
-        with col1:
-            st.download_button("⬇️ Descargar Excel", res["excel"], file_name="Reporte_Asociados.xlsx",
-                mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet")
-        with col2:
-            st.download_button("⬇️ Descargar PDF", res["pdf"], file_name="Reporte_Asociados.pdf",
-                mime="application/pdf")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.download_button("⬇️ Descargar Excel", res["excel"], file_name="Reporte_Asociados.xlsx",
+                    mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    use_container_width=True)
+            with col2:
+                st.download_button("⬇️ Descargar PDF", res["pdf"], file_name="Reporte_Asociados.pdf",
+                    mime="application/pdf", use_container_width=True)
 
         # --- Abrir en Google Sheets (usa el resultado YA procesado; NO llama a la IA) ---
         st.markdown("##### 📗 Abrir en Google Sheets")
